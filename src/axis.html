@@ -1,0 +1,82 @@
+<html>
+
+<head>
+<title>MATA65 - Computação Gráfica</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<script id="baseImage-vs" type="x-shader/x-vertex">
+	attribute vec3 aVertexPosition;
+	attribute vec2 aVertexTexture;
+	
+	uniform mat4 uMVPMat;
+		
+	varying vec2 vTextureCoord;
+	
+	void main(void) {
+		gl_Position = uMVPMat* vec4(aVertexPosition.xyz, 1.0);
+		vTextureCoord = aVertexTexture;
+	}
+</script>
+
+<script id="baseImage-fs" type="x-shader/x-fragment">
+	precision mediump float;
+		
+	uniform sampler2D uSampler;
+	
+	varying vec2 vTextureCoord;
+		
+	void main(void) {	
+		gl_FragColor = texture2D(uSampler, vTextureCoord);
+		}
+</script>
+
+<script id="Axis-vs" type="x-shader/x-vertex">
+	attribute vec3 aVertexPosition;
+	attribute vec4 aVertexColor;
+	
+	uniform mat4 uMVPMat;
+		
+	varying vec4 vColor;
+		
+	void main(void) {
+		
+ 		gl_Position = uMVPMat * vec4(aVertexPosition.xyz, 1.0);
+ 		
+		vColor = aVertexColor;
+	}
+
+</script>
+
+<script id="Axis-fs" type="x-shader/x-fragment">
+	precision mediump float;
+		
+	varying vec4 vColor;
+		
+	void main(void) {
+		gl_FragColor = vColor;
+	}
+</script>
+
+<script type="text/javascript" src="../lib/webgl-utils.js"></script>
+<script type="text/javascript" src="../lib/cuon-matrix.js"></script>
+<script type="text/javascript" src="../lib/shaders.js"></script>
+<script type="text/javascript" src="ar-libs/svd.js"></script> 
+<script type="text/javascript" src="ar-libs/posit1.js"></script> 
+<script type="text/javascript" src="ar-libs/cv.js"></script> 
+<script type="text/javascript" src="ar-libs/aruco.js"></script> 
+<script type="text/javascript" src="axis.js"></script>
+
+</head>
+
+<body onload="webGLStart();">
+    <h1>Trabalho</h1><br />
+    <p>Realidade Aumentada em WebGL.</p>
+    <br/>
+    <div id="output"> </div>
+    <br/>
+	<canvas id="videoGL" width="320" height="240" style="visibility: visible;"></canvas>
+	<video id="monitor" autoplay width="320" height="240" style="visibility: hidden;"></video>
+	<canvas id="videoImage" width="256" height="256" style="visibility: hidden;"></canvas>
+</body>
+
+</html>
