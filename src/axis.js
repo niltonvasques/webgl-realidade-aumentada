@@ -5,6 +5,13 @@ var axis 			= null;
 var baseTexture		= null;
 
 
+// A biblioteca Aruco detecta os markers e atribui um id único de acordo
+// com o desenho do marker.
+// Aqui ficará declarado todos os marcadores que iremos utilizar na aplicação.
+//
+var Marker = new Object();
+Marker.sol	= 24;
+
 var video, 
 	videoImage, 
 	videoImageContext, 
@@ -50,7 +57,7 @@ function noStream(e) {
 	
 	if (e.code == 1) {   
 		msg = "User denied access to use camera.";   
-		}
+	}
 	document.getElementById("output").textContent = msg;
 }
 
@@ -282,7 +289,7 @@ function drawAxis(o, shaderProgram, MVPMat) {
 	else {
 		alert("o.vertexBuffer == null");
 		return;
-		}
+	}
 
 	if (o.colorBuffer != null) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, o.colorBuffer);
@@ -301,10 +308,10 @@ function drawAxis(o, shaderProgram, MVPMat) {
 // ********************************************************
 function drawScene(markers) {
 	
-var modelMat = new Matrix4();
-var ViewMat = new Matrix4();
-var ProjMat = new Matrix4();
-var MVPMat 	= new Matrix4();
+	var modelMat = new Matrix4();
+	var ViewMat = new Matrix4();
+	var ProjMat = new Matrix4();
+	var MVPMat 	= new Matrix4();
 
 
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -379,7 +386,7 @@ function webGLStart() {
 	
 	canvas = document.getElementById("videoGL");
 	gl = initGL(canvas);
-	
+		
 	if (!gl) { 
 		alert("Could not initialise WebGL, sorry :-(");
 		return;
@@ -455,7 +462,7 @@ function render() {
 		
 		var markers = detector.detect(imageData);
 	
-		
+			
 		drawCorners(markers);
 		
 		drawScene(markers);
@@ -493,18 +500,25 @@ function drawCorners(markers){
 // ********************************************************
 // ********************************************************
 function updateScenes(markers){
-  var corners, corner, pose, i;
+	var corners, corner, pose, i;
+
+	var solIndex = -1;
+	for(var m = 0; m < markers.length; m++ ){
+		if( markers[m].id == Marker.sol ){
+			solIndex = m;	
+		}
+	}
   
-	if (markers.length > 0) {
+	if (markers.length > 0 && solIndex != -1) {
 		
-		corners = markers[0].corners;
+		corners = markers[solIndex].corners;
 		
 		for (i = 0; i < corners.length; ++ i) {
 			corner = corners[i];
 			
 			corner.x = corner.x - (canvas.width / 2);
 			corner.y = (canvas.height / 2) - corner.y;
-			}
+		}
 		
 		pose = posit.pose(corners);
 		
@@ -524,13 +538,12 @@ function updateScenes(markers){
 		
 		console.log("pose.bestError = " + pose.bestError);
 		console.log("pose.alternativeError = " + pose.alternativeError);
-		}
-	else {
+	} else {
 		transMat.setIdentity();
 		rotMat.setIdentity();
 		scaleMat.setIdentity();
 		yaw 	= 0.0;
 		pitch 	= 0.0;
 		roll 	= 0.0;
-		}
+	}
 };
