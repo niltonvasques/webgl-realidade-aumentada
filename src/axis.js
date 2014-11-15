@@ -454,6 +454,7 @@ function render() {
 		imageData = videoImageContext.getImageData(0, 0, videoImage.width, videoImage.height);
 		
 		var markers = detector.detect(imageData);
+	
 		
 		drawCorners(markers);
 		
@@ -473,8 +474,7 @@ function drawCorners(markers){
 	
 	videoImageContext.strokeStyle = "red";
 	videoImageContext.beginPath();
-		
-	
+
 	for (j = 0; j < corners.length; ++ j){
 	  corner = corners[j];
 	  videoImageContext.moveTo(corner.x, corner.y);
