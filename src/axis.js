@@ -4,6 +4,7 @@ var shaderAxis		= null;
 var axis 			= null;
 var baseTexture		= null;
 
+
 var video, 
 	videoImage, 
 	videoImageContext, 
@@ -318,15 +319,15 @@ var MVPMat 	= new Matrix4();
 	ProjMat.setOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
 	
 	MVPMat.setIdentity();
-    MVPMat.multiply(ProjMat);
-    MVPMat.multiply(ViewMat);
-    MVPMat.multiply(modelMat);
+	MVPMat.multiply(ProjMat);
+	MVPMat.multiply(ViewMat);
+	MVPMat.multiply(modelMat);
 		
 	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
 	
 	updateScenes(markers);
    		
-    ViewMat.setLookAt(	0.0, 0.0, 0.0,
+	ViewMat.setLookAt(	0.0, 0.0, 0.0,
     					0.0, 0.0, -1.0,
     					0.0, 1.0, 0.0 );
     
@@ -338,9 +339,9 @@ var MVPMat 	= new Matrix4();
 	modelMat.multiply(scaleMat);
 	
 	MVPMat.setIdentity();
-    MVPMat.multiply(ProjMat);
-    MVPMat.multiply(ViewMat);
-    MVPMat.multiply(modelMat);
+	MVPMat.multiply(ProjMat);
+	MVPMat.multiply(ViewMat);
+	MVPMat.multiply(modelMat);
 	
 	drawAxis(axis, shaderAxis, MVPMat);
 }
@@ -363,7 +364,7 @@ function webGLStart() {
 	if (!navigator.getUserMedia) {
 		document.getElementById("output").innerHTML = 
 			"Sorry. <code>navigator.getUserMedia()</code> is not available.";
-		}
+	}
 	navigator.getUserMedia({video: true}, gotStream, noStream);
 
 	// assign variables to HTML elements
@@ -426,7 +427,7 @@ function webGLStart() {
 	if (!axis) {
 		console.log('Failed to set the AXIS vertex information');
 		return;
-		}
+	}
 		
 	detector 	= new AR.Detector();
 	posit 		= new POS.Posit(modelSize, canvas.width);
@@ -452,12 +453,12 @@ function render() {
 		videoTexture.needsUpdate = true;
 		imageData = videoImageContext.getImageData(0, 0, videoImage.width, videoImage.height);
 		
-        var markers = detector.detect(imageData);
- 	
-        drawCorners(markers);
-	
-        drawScene(markers);
-		}
+		var markers = detector.detect(imageData);
+		
+		drawCorners(markers);
+		
+		drawScene(markers);
+	}
 }
 
 // ********************************************************
@@ -472,6 +473,7 @@ function drawCorners(markers){
 	
 	videoImageContext.strokeStyle = "red";
 	videoImageContext.beginPath();
+		
 	
 	for (j = 0; j < corners.length; ++ j){
 	  corner = corners[j];
