@@ -1,8 +1,21 @@
 var gl;
 var shaderBaseImage	= null;
 var shaderAxis		= null;
+var shaderPlanets   = null;
 var axis 			= null;
 var baseTexture		= null;
+var model			= new Array;
+var color 		= new Float32Array(3);
+var modelMat = new Matrix4();
+var ViewMat = new Matrix4();
+var ProjMat = new Matrix4();
+var MVPMat 	= new Matrix4();
+var cameraPos 		= new Vector3();
+var cameraLook 		= new Vector3();
+var cameraUp 		= new Vector3();
+var g_objDoc 		= null;	// The information of OBJ file
+var g_drawingInfo 	= null;	// The information for drawing 3D model
+
 
 
 // A biblioteca Aruco detecta os markers e atribui um id único de acordo
@@ -54,6 +67,66 @@ function initGL(canvas) {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	return gl;
 }
+
+function readOBJFile(fileName, gl, scale, reverse) {
+	var request = new XMLHttpRequest();
+	
+	request.onreadystatechange = function() {
+		if (request.readyState === 4 && request.status !== 404) 
+			onReadOBJFile(request.responseText, fileName, gl, scale, reverse);
+		}
+	request.open('GET', fileName, true); // Create a request to acquire the file
+	request.send();                      // Send the request
+}
+
+function onReadOBJFile(fileString, fileName, gl, scale, reverse) {
+	var objDoc = new OBJDoc(fileName);	// Create a OBJDoc object
+	var result = objDoc.parse(fileString, scale, reverse);	// Parse the file
+	
+	if (!result) {
+		g_objDoc 		= null; 
+		g_drawingInfo 	= null;
+		console.log("OBJ file parsing error.");
+		return;
+		}
+		
+	g_objDoc = objDoc;
+}
+
+function onReadComplete(gl) {
+	
+var groupModel = null;
+
+	g_drawingInfo 	= g_objDoc.getDrawingInfo();
+	
+	for(var o = 0; o < g_drawingInfo.numObjects; o++) {
+		
+		groupModel = new Object();
+
+		groupModel.vertexBuffer = gl.createBuffer();
+		if (groupModel.vertexBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.vertexBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.vertices[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create vertexBuffer");
+	
+		groupModel.colorBuffer = null;
+
+		groupModel.indexBuffer = gl.createBuffer();
+		if (groupModel.indexBuffer) {		
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, groupModel.indexBuffer);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g_drawingInfo.indices[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create indexBuffer");
+		
+		groupModel.numObjects = g_drawingInfo.indices[o].length;
+		model.push(groupModel);
+		}
+}
+
+
 
 // ********************************************************
 // ********************************************************
@@ -224,7 +297,7 @@ function initTexture() {
 // ********************************************************
 // ********************************************************
 function animate() {
-    requestAnimationFrame( animate );
+    requestAnimationFrame(animate);
 	render();		
 }
 
@@ -242,7 +315,9 @@ function render() {
 			
 		drawCorners(markers);
 		
+
 		drawScene(markers);
+
 	}
 }
 

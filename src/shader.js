@@ -39,6 +39,23 @@ function drawTextQuad(o, shaderProgram, MVPMat) {
 	gl.drawArrays(gl.TRIANGLES, 0, o.numItems);
 }
 
+function draw(o, shaderProgram, primitive) {
+
+	if (o.vertexBuffer != null) {
+		gl.bindBuffer(gl.ARRAY_BUFFER, o.vertexBuffer);
+		gl.vertexAttribPointer(shaderProgram.vPositionAttr, 3, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(shaderProgram.vPositionAttr);  
+		}
+	else {
+		alert("o.vertexBuffer == null");
+		return;
+		}
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
+
+	gl.drawElements(primitive, o.numObjects, gl.UNSIGNED_SHORT, 0);
+}
+
 
 // ********************************************************
 // ********************************************************
@@ -146,11 +163,78 @@ function webGLStart() {
 		console.log('Failed to set the AXIS vertex information');
 		return;
 	}
-		
-	detector 	= new AR.Detector();
-	posit 		= new POS.Posit(modelSize, canvas.width);
 
-	rotMat.setIdentity();
-	transMat.setIdentity();
-	animate();
+	shaderBaseImage = initShaders("baseImage", gl);
+	if (shaderBaseImage == null) {
+		alert("Erro na inicilizacao do shaderBaseImage!!");
+		return;
+		}
+
+	shaderBaseImage.vPositionAttr 	= gl.getAttribLocation(shaderBaseImage, "aVertexPosition");
+	shaderBaseImage.vTexAttr 		= gl.getAttribLocation(shaderBaseImage, "aVertexTexture");
+	shaderBaseImage.uMVPMat 		= gl.getUniformLocation(shaderBaseImage, "uMVPMat");
+	shaderBaseImage.SamplerUniform	= gl.getUniformLocation(shaderBaseImage, "uSampler");
+
+	if ( 	(shaderBaseImage.vertexPositionAttribute < 0) 	||
+			(shaderBaseImage.vertexTextAttribute < 0) 		||
+			(shaderBaseImage.SamplerUniform < 0) 			||
+			!shaderBaseImage.uMVPMat ) {
+		alert("shaderBaseImage attribute ou uniform nao localizado!");
+		return;
+		}
+
+	shaderPlanets 					= initShaders("Planets", gl);	
+	shaderPlanets.vPositionAttr 	= gl.getAttribLocation(shaderPlanets, "aVertexPosition");		
+	shaderPlanets.uColor 			= gl.getUniformLocation(shaderPlanets, "uColor");
+	shaderPlanets.uModelMat 		= gl.getUniformLocation(shaderPlanets, "uModelMat");
+	
+	if (shaderPlanets.vPositionAttr < 0 || shaderPlanets.uColor  < 0 || !shaderPlanets.uModelMat) {
+		console.log("Error getAttribLocation shaderPlanets"); 
+		return;
+		}
+	
+	
+	readOBJFile("sphere.obj", gl, 1, true);
+	
+var tick = function() {   // Start drawing
+		if (g_objDoc != null && g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
+			
+			onReadComplete(gl);
+			
+			g_objDoc = null;
+			
+			cameraPos.elements[0] 	= 0.8;
+			cameraPos.elements[1] 	= 0.8;
+			cameraPos.elements[2] 	= 0.8;
+			cameraLook.elements[0] 	= 0.0;
+			cameraLook.elements[1] 	= 0.0;
+			cameraLook.elements[2] 	= 0.0;
+			cameraUp.elements[0] 	= 0.0;
+			cameraUp.elements[1] 	= 1.0;
+			cameraUp.elements[2] 	= 0.0;
+			
+
+			
+			}
+		if (model.length > 0) {
+	//		
+			animate();
+			rotMat.setIdentity();
+			transMat.setIdentity();
+			animate();
+			}
+		else{
+			detector 	= new AR.Detector();
+	
+			posit 		= new POS.Posit(modelSize, canvas.width);
+	
+			requestAnimationFrame(tick, canvas);
+		}
+		};	
+	tick();
 }
+
+		
+	
+
+	

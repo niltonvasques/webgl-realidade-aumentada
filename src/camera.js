@@ -35,6 +35,7 @@ function drawCorners(markers){
 
 	for (j = 0; j < corners.length; ++ j){
 	  corner = corners[j];
+	  
 	  videoImageContext.moveTo(corner.x, corner.y);
 	  corner = corners[(j + 1) % corners.length];
 	  videoImageContext.lineTo(corner.x, corner.y);
@@ -87,6 +88,25 @@ function updateScenes(markers){
 		scaleMat.setIdentity();
 		scaleMat.scale(modelSize, modelSize, modelSize);
 		
+			try {
+    	gl.useProgram(shaderPlanets);
+		}
+	catch(err){
+        alert(err);
+        console.error(err.description);
+    	}
+
+		modelMat.scale(0.8, 0.8, 0.8);
+		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, modelMat.elements);
+	
+		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
+		gl.uniform3fv(shaderPlanets.uColor, color);
+	
+	for(var o = 0; o < model.length; o++) {
+		console.log("chegou aqui!!");
+		draw(model[o], shaderPlanets, gl.TRIANGLES);
+		}
+
 		console.log("pose.bestError = " + pose.bestError);
 		console.log("pose.alternativeError = " + pose.alternativeError);
 	} else {
@@ -101,17 +121,17 @@ function updateScenes(markers){
 
 function drawScene(markers) {
 	
-	var modelMat = new Matrix4();
-	var ViewMat = new Matrix4();
-	var ProjMat = new Matrix4();
-	var MVPMat 	= new Matrix4();
-
+	
 
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	
 	if (!videoTexture.needsUpdate) 
 		return;
+	
+    
+   // Desenha Sol
+    	
 	
 	modelMat.setIdentity();
 	ViewMat.setIdentity();
@@ -133,6 +153,10 @@ function drawScene(markers) {
     
 	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 	
+	
+	
+
+
 	modelMat.setIdentity();
 	modelMat.multiply(transMat);
 	modelMat.multiply(rotMat);
