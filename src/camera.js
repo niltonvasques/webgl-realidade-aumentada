@@ -51,7 +51,7 @@ function drawCorners(markers){
 
 // ********************************************************
 // ********************************************************
-function updateScenes(markers){
+function updateScenes(markers){ //As modificações foram feitas aqui!!
 	var corners, corner, pose, i;
 
 	var solIndex = -1;
@@ -65,6 +65,7 @@ function updateScenes(markers){
 		
 		corners = markers[solIndex].corners;
 		
+
 		for (i = 0; i < corners.length; ++ i) {
 			corner = corners[i];
 			
@@ -73,42 +74,62 @@ function updateScenes(markers){
 		}
 		
 		pose = posit.pose(corners);
+
+//		alert(pose.bestTranslation[0]/262.144);
 		
 		yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
 		pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
 		roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
 		
-		rotMat.setIdentity();
-		rotMat.rotate(yaw, 0.0, 1.0, 0.0);
-		rotMat.rotate(pitch, 1.0, 0.0, 0.0);
-		rotMat.rotate(roll, 0.0, 0.0, 1.0);
+		modelMat.setIdentity();
+		modelMat.rotate(yaw, 0.0, 1.0, 0.0);
+		modelMat.rotate(pitch, 1.0, 0.0, 0.0);
+		modelMat.rotate(roll, 0.0, 0.0, 1.0);
 		
-		transMat.setIdentity();
+		/*transMat.setIdentity();
 		transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 		scaleMat.setIdentity();
 		scaleMat.scale(modelSize, modelSize, modelSize);
+		*/
+
+		//Aqui é parte do código que controla o modelo
+
+		modelMat.translate(pose.bestTranslation[0]/262.144, pose.bestTranslation[0]/262.144,0);
 		
-			try {
-    	gl.useProgram(shaderPlanets);
+		try { 
+    		gl.useProgram(shaderPlanets);
 		}
 	catch(err){
         alert(err);
         console.error(err.description);
     	}
 
-		modelMat.scale(0.8, 0.8, 0.8);
+		//modelMat.scale(0.5, 0.5, 0.5);
+		//modelMat.scale(modelSize, modelSize, modelSize);
+		//modelMat.setIdentity();
+		//modelMat.translate(pose.bestTranslation[0]/262.144, pose.bestTranslation[1]/262.144, -pose.bestTranslation[2]/262.144);
+		//modelMat.setIdentity();
+		//modelMat.scale(modelSize, modelSize, modelSize);
+
 		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, modelMat.elements);
 	
 		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
 		gl.uniform3fv(shaderPlanets.uColor, color);
 	
-	for(var o = 0; o < model.length; o++) {
-		console.log("chegou aqui!!");
-		draw(model[o], shaderPlanets, gl.TRIANGLES);
+
+	for(var o = 0; o < model.length; o++) { 
+			console.log("chegou aqui!!");
+			draw(model[o], shaderPlanets, gl.TRIANGLES);
 		}
 
-		console.log("pose.bestError = " + pose.bestError);
-		console.log("pose.alternativeError = " + pose.alternativeError);
+		console.log(yaw);
+		console.log(pitch);
+		console.log(roll);
+
+		/*console.log("pose.bestTranslation.x = " + pose.bestTranslation[0]/262.144);
+		console.log("pose.bestTranslation.y = " + pose.bestTranslation[1]/262.144);
+		console.log("pose.bestTranslation.z = " + -pose.bestTranslation[2]/262.144);
+	*/
 	} else {
 		transMat.setIdentity();
 		rotMat.setIdentity();
@@ -130,7 +151,6 @@ function drawScene(markers) {
 		return;
 	
     
-   // Desenha Sol
     	
 	
 	modelMat.setIdentity();
@@ -152,9 +172,6 @@ function drawScene(markers) {
     					0.0, 1.0, 0.0 );
     
 	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
-	
-	
-	
 
 
 	modelMat.setIdentity();
