@@ -32,8 +32,11 @@ var g_drawingInfo 	= null;	// The information for drawing 3D model
 // com o desenho do marker.
 // Aqui ficará declarado todos os marcadores que iremos utilizar na aplicação.
 //
-var Marker 	= new Object();
-Marker.sol	= 24;
+var SolMarker 		= new Object();
+SolMarker.id		= 24;
+SolMarker.rotMat 		= new Matrix4( );
+SolMarker.transMat 	= new Matrix4( );
+SolMarker.scaleMat 	= new Matrix4( );
 
 var video, 
 	videoImage, 
@@ -149,7 +152,7 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 
 	var solIndex = -1;
 	for(var m = 0; m < markers.length; m++ ){
-		if( markers[m].id == Marker.sol ){
+		if( markers[m].id == SolMarker.id ){
 			solIndex = m;	
 		}
 	}
@@ -158,18 +161,14 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		
 		corners = markers[solIndex].corners;
 		
-
 		for (i = 0; i < corners.length; ++ i) {
 			corner = corners[i];
-			
 			corner.x = corner.x - (canvas.width / 2);
 			corner.y = (canvas.height / 2) - corner.y;
 		}
 		
 		pose = posit.pose(corners);
 
-//		alert(pose.bestTranslation[0]/262.144);
-		
 		yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
 		pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
 		roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
@@ -177,68 +176,20 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		modelMat.setIdentity();
 		ViewMat.setIdentity();
 		ProjMat.setIdentity();
-
-		rotMat.setIdentity();
-		rotMat.rotate(yaw, 0.0, 1.0, 0.0);
-		rotMat.rotate(pitch, 1.0, 0.0, 0.0);
-		rotMat.rotate(roll, 0.0, 0.0, 1.0);
-
-		rotMat.setIdentity();
-		rotMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
-
-		scaleMat.setIdentity();
-		scaleMat.scale( modelSize, modelSize, modelSize );
-
-		modelMat.setIdentity();
-		modelMat.multiply(transMat);
-		modelMat.multiply(rotMat);
-		modelMat.multiply(scaleMat);
-
-		ViewMat.setLookAt(	0.0, 0.0, 0.0,
-						0.0, 0.0, -1.0,
-						0.0, 1.0, 0.0 );
-	    
-		ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
-
-		MVPMat.setIdentity();
-		MVPMat.multiply(ProjMat);
-		MVPMat.multiply(ViewMat);
-		MVPMat.multiply(modelMat);	
 		
-		/*transMat.setIdentity();
-		transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
-		scaleMat.setIdentity();
-		scaleMat.scale(modelSize, modelSize, modelSize);
-		*/
+		SolMarker.found = true;
 
-		//Aqui é parte do código que controla o modelo
+		SolMarker.rotMat.setIdentity();
+		SolMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
+		SolMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
+		SolMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
 
-		//modelMat.translate(pose.bestTranslation[0]/262.144, pose.bestTranslation[0]/262.144,0);
-		
-		try { 
-			gl.useProgram(shaderPlanets);
-		}catch(err){
-			alert(err);
-			console.error(err.description);
-		}
+		SolMarker.transMat.setIdentity();
+		SolMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 
-		//modelMat.scale(0.5, 0.5, 0.5);
-		//modelMat.scale(modelSize, modelSize, modelSize);
-		//modelMat.setIdentity();
-		//modelMat.translate(pose.bestTranslation[0]/262.144, pose.bestTranslation[1]/262.144, -pose.bestTranslation[2]/262.144);
-		//modelMat.setIdentity();
-		//modelMat.scale(modelSize, modelSize, modelSize);
-		
-		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
-	
-		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
-		gl.uniform3fv(shaderPlanets.uColor, color);
-	
+		SolMarker.scaleMat.setIdentity();
+		SolMarker.scaleMat.scale( modelSize, modelSize, modelSize );
 
-		for(var o = 0; o < model.length; o++) { 
-			console.log("chegou aqui!!");
-			draw(model[o], shaderPlanets, gl.TRIANGLES);
-		}
 
 		console.log(yaw);
 		console.log(pitch);
@@ -249,6 +200,11 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		console.log("pose.bestTranslation.z = " + -pose.bestTranslation[2]/262.144);
 	*/
 	} else {
+		SolMarker.found = false;
+		SolMarker.transMat.setIdentity();
+		SolMarker.rotMat.setIdentity();
+		SolMarker.scaleMat.setIdentity();
+
 		transMat.setIdentity();
 		rotMat.setIdentity();
 		scaleMat.setIdentity();
@@ -276,7 +232,9 @@ function drawScene(markers) {
 	MVPMat.multiply(modelMat);
 		
 	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
-	
+
+// Verifica os marcadores encontrados
+// Atualiza as matrizes de localização, translação e rotação dos objetos encontrados	
 	updateScenes(markers);
    		
 	ViewMat.setLookAt(	0.0, 0.0, 0.0,
@@ -285,11 +243,11 @@ function drawScene(markers) {
     
 	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
-
+// Configura o Axis na posição do marcador do sol
 	modelMat.setIdentity();
-	modelMat.multiply(transMat);
-	modelMat.multiply(rotMat);
-	modelMat.multiply(scaleMat);
+	modelMat.multiply(SolMarker.transMat);
+	modelMat.multiply(SolMarker.rotMat);
+	modelMat.multiply(SolMarker.scaleMat);
 	
 	MVPMat.setIdentity();
 	MVPMat.multiply(ProjMat);
@@ -297,6 +255,10 @@ function drawScene(markers) {
 	MVPMat.multiply(modelMat);
 	
 	drawAxis(axis, shaderAxis, MVPMat);
+// Desenha o sol caso seu marcador tenha sido encontrado
+// IF SolMarker.found = true
+	drawSol( );
+
 }
 
 function loadingResources( ){
@@ -335,4 +297,43 @@ function configureCameraPosition( ){
 	cameraUp.elements[0] 	= 0.0;
 	cameraUp.elements[1] 	= 1.0;
 	cameraUp.elements[2] 	= 0.0;
+}
+
+function drawSol( ){
+		if( !SolMarker.found ) return;
+
+		ViewMat.setLookAt(	0.0, 0.0, 0.0,
+						0.0, 0.0, -1.0,
+						0.0, 1.0, 0.0 );
+	    
+		ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
+
+		modelMat.setIdentity();
+		modelMat.multiply(SolMarker.transMat);
+		modelMat.multiply(SolMarker.rotMat);
+		modelMat.multiply(SolMarker.scaleMat);
+
+		MVPMat.setIdentity();
+		MVPMat.multiply(ProjMat);
+		MVPMat.multiply(ViewMat);
+		MVPMat.multiply(modelMat);	
+		
+		
+		try { 
+			gl.useProgram(shaderPlanets);
+		}catch(err){
+			alert(err);
+			console.error(err.description);
+		}
+		
+		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
+	
+		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
+		gl.uniform3fv(shaderPlanets.uColor, color);
+	
+
+		for(var o = 0; o < model.length; o++) { 
+			console.log("chegou aqui!!");
+			draw(model[o], shaderPlanets, gl.TRIANGLES);
+		}
 }
