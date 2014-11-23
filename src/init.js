@@ -108,7 +108,7 @@ function initializeShaderTerra( ){
 
 	shaderTerra 			= initShaders( "terra", gl );
 
-	shaderTerra.aVertexPosition 	= gl.getAttribLocation( shaderTerra, "aVertexPosition" );
+	shaderTerra.vPositionAttr 	= gl.getAttribLocation( shaderTerra, "aVertexPosition" );
 	shaderTerra.aVNorm		= gl.getAttribLocation( shaderTerra, "aVNorm" );
 
 	shaderTerra.uModelMat		= gl.getUniformLocation( shaderTerra, "uModelMat" );
@@ -193,6 +193,14 @@ var groupModel = null;
 		else
 			alert("ERROR: can not create indexBuffer");
 		
+		groupModel.normalBuffer = gl.createBuffer( );
+		if( groupModel.normalBuffer ){
+			gl.bindBuffer( gl.ARRAY_BUFFER, groupModel.normalBuffer );
+			gl.bufferData( gl.ARRAY_BUFFER, g_drawingInfo.normals[o], gl.STATIC_DRAW );
+		}else{
+			alert( "ERROR: Can't create normal buffer " );
+		}
+
 		groupModel.numObjects = g_drawingInfo.indices[o].length;
 		model.push(groupModel);
 		}

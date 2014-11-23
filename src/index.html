@@ -4,89 +4,89 @@
 <title>MATA65 - Computação Gráfica</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
-<script id="baseImage-vs" type="x-shader/x-vertex">
-	attribute vec3 aVertexPosition;
-	attribute vec2 aVertexTexture;
-	varying vec2 vTextureCoord;
-	uniform mat4 uMVPMat;
-	uniform vec3 uColor;
+	<script id="baseImage-vs" type="x-shader/x-vertex">
+		attribute vec3 aVertexPosition;
+		attribute vec2 aVertexTexture;
+		varying vec2 vTextureCoord;
+		uniform mat4 uMVPMat;
+		uniform vec3 uColor;
 
-	varying vec4 vColor;
-	
-	void main(void) {
-		gl_Position = uMVPMat* vec4(aVertexPosition.xyz, 1.0);
-		vTextureCoord = aVertexTexture;
-		//vColor = vec4(uColor, 1.0);
-	}
-</script>
+		varying vec4 vColor;
+		
+		void main(void) {
+			gl_Position = uMVPMat* vec4(aVertexPosition.xyz, 1.0);
+			vTextureCoord = aVertexTexture;
+			//vColor = vec4(uColor, 1.0);
+		}
+	</script>
 
-<script id="baseImage-fs" type="x-shader/x-fragment">
-	precision mediump float;
+	<script id="baseImage-fs" type="x-shader/x-fragment">
+		precision mediump float;
 
-	uniform sampler2D uSampler;
-	
-	varying vec2 vTextureCoord;
+		uniform sampler2D uSampler;
 		
-	void main(void) {	
-	    gl_FragColor = texture2D(uSampler, vTextureCoord);
-	
-	}
-</script>
+		varying vec2 vTextureCoord;
+			
+		void main(void) {	
+		    gl_FragColor = texture2D(uSampler, vTextureCoord);
+		
+		}
+	</script>
 
-<script id="Axis-vs" type="x-shader/x-vertex">
-	attribute vec3 aVertexPosition;
-	attribute vec4 aVertexColor;
-	
-	uniform mat4 uMVPMat;
+	<script id="Axis-vs" type="x-shader/x-vertex">
+		attribute vec3 aVertexPosition;
+		attribute vec4 aVertexColor;
 		
-	varying vec4 vColor;
-		
-	void main(void) {
-		
- 		gl_Position = uMVPMat * vec4(aVertexPosition.xyz, 1.0);
- 		
-		vColor = aVertexColor;
-	}
+		uniform mat4 uMVPMat;
+			
+		varying vec4 vColor;
+			
+		void main(void) {
+			
+			gl_Position = uMVPMat * vec4(aVertexPosition.xyz, 1.0);
+			
+			vColor = aVertexColor;
+		}
 
-</script>
+	</script>
 
-<script id="Axis-fs" type="x-shader/x-fragment">
-	precision mediump float;
-		
-	varying vec4 vColor;
-		
-	void main(void) {
-		gl_FragColor = vColor;
-	}
-</script>
+	<script id="Axis-fs" type="x-shader/x-fragment">
+		precision mediump float;
+			
+		varying vec4 vColor;
+			
+		void main(void) {
+			gl_FragColor = vColor;
+		}
+	</script>
 
-<script id="Planets-vs" type="x-shader/x-vertex">
-	attribute vec3 aVertexPosition;
-	
-	uniform mat4 uModelMat;
-	uniform vec3 uColor;
+	<script id="Planets-vs" type="x-shader/x-vertex">
+		attribute vec3 aVertexPosition;
 		
-	varying vec4 vColor;
-		
-	void main(void) {
-		
- 		gl_Position = uModelMat * vec4(aVertexPosition.xyz, 1.0);
- 		
-		vColor = vec4(uColor, 1.0);
-	}
+		uniform mat4 uModelMat;
+		uniform vec3 uColor;
+			
+		varying vec4 vColor;
+			
+		void main(void) {
+			
+			gl_Position = uModelMat * vec4(aVertexPosition.xyz, 1.0);
+			
+			vColor = vec4(uColor, 1.0);
+		}
 
 
-</script>
+	</script>
 
-<script id="Planets-fs" type="x-shader/x-fragment">
-	precision mediump float;
-		
-	varying vec4 vColor;
-		
-	void main(void) {
-		gl_FragColor = vColor;
-	}
-</script>
+	<script id="Planets-fs" type="x-shader/x-fragment">
+		precision mediump float;
+			
+		varying vec4 vColor;
+			
+		void main(void) {
+			gl_FragColor = vColor;
+		}
+	</script>
 
 	<script id="terra-vs" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
@@ -134,8 +134,10 @@
 			// Calculado a distância entre a luz e o vértice
 			float d		= distance( vPosW, uLPos );
 			//A luz difusa é então multiplicada pelo inverso da distância
-			vec4 nMatDif	= uMatDif * 1.0 / d;
-			vec4 nMatSpec	= uMatSpec * 1.0 / d;
+			//vec4 nMatDif	= uMatDif * 1.0 / d;
+			//vec4 nMatSpec	= uMatSpec * 1.0 / d;
+			vec4 nMatDif	= uMatDif ;
+			vec4 nMatSpec	= uMatSpec;
 
 			vec4 diffuse	= uLColor * nMatDif * teta;
 			
