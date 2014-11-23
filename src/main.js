@@ -34,9 +34,15 @@ var g_drawingInfo 	= null;	// The information for drawing 3D model
 //
 var SolMarker 		= new Object();
 SolMarker.id		= 24;
-SolMarker.rotMat 		= new Matrix4( );
+SolMarker.rotMat 	= new Matrix4( );
 SolMarker.transMat 	= new Matrix4( );
 SolMarker.scaleMat 	= new Matrix4( );
+
+var TerraMarker 	= new Object();
+TerraMarker.id		= 1;
+TerraMarker.rotMat 	= new Matrix4( );
+TerraMarker.transMat 	= new Matrix4( );
+TerraMarker.scaleMat 	= new Matrix4( );
 
 var video, 
 	videoImage, 
@@ -150,7 +156,8 @@ function drawCorners(markers){
 function updateScenes(markers){ //As modificações foram feitas aqui!!
 	var corners, corner, pose, i;
 
-	SolMarker.found = false;
+	SolMarker.found 	= false;
+	TerraMarker.found 	= false;
 
 	for(var m = 0; m < markers.length; m++ ){
 
@@ -164,44 +171,70 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		
 		pose = posit.pose(corners);
 					
-		updateSolMarker( markers[m].id, pose );
+		//updateSolMarker( markers[m].id, pose );
+		updateTerraMarker( markers[m].id, pose );
 	}
  
 };
 
 function updateSolMarker( markerId, pose ){
 		
-		if( markerId != SolMarker.id ){
-			return;
-		}
+	if( markerId != SolMarker.id ){
+		return;
+	}
 
-		yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
-		pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
-		roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
+	yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
+	pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
+	roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
 
-		SolMarker.found = true;
+	SolMarker.found = true;
 
-		SolMarker.rotMat.setIdentity();
-		SolMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
-		SolMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
-		SolMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
+	SolMarker.rotMat.setIdentity();
+	SolMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
+	SolMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
+	SolMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
 
-		SolMarker.transMat.setIdentity();
-		SolMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
+	SolMarker.transMat.setIdentity();
+	SolMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 
-		SolMarker.scaleMat.setIdentity();
-		SolMarker.scaleMat.scale( modelSize, modelSize, modelSize );
+	SolMarker.scaleMat.setIdentity();
+	SolMarker.scaleMat.scale( modelSize, modelSize, modelSize );
 
-		/*console.log(yaw);
-		console.log(pitch);
-		console.log(roll);
-		*/
+	/*console.log(yaw);
+	console.log(pitch);
+	console.log(roll);
+	*/
 
-		/*console.log("pose.bestTranslation.x = " + pose.bestTranslation[0]/262.144);
-		console.log("pose.bestTranslation.y = " + pose.bestTranslation[1]/262.144);
-		console.log("pose.bestTranslation.z = " + -pose.bestTranslation[2]/262.144);
+	/*console.log("pose.bestTranslation.x = " + pose.bestTranslation[0]/262.144);
+	console.log("pose.bestTranslation.y = " + pose.bestTranslation[1]/262.144);
+	console.log("pose.bestTranslation.z = " + -pose.bestTranslation[2]/262.144);
 	*/
 }
+
+function updateTerraMarker( markerId, pose ){
+		
+	if( markerId != TerraMarker.id ){
+		return;
+	}
+
+	yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
+	pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
+	roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
+
+	TerraMarker.found = true;
+
+	TerraMarker.rotMat.setIdentity();
+	TerraMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
+	TerraMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
+	TerraMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
+
+	TerraMarker.transMat.setIdentity();
+	TerraMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
+
+	TerraMarker.scaleMat.setIdentity();
+	TerraMarker.scaleMat.scale( modelSize, modelSize, modelSize );
+}
+
 
 function drawScene(markers) {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -235,6 +268,11 @@ function drawScene(markers) {
 // Desenha o sol caso seu marcador tenha sido encontrado
 // IF SolMarker.found = true
 	drawSol( true );
+
+// Desenha a terra caso seu marcador tenha sido encontrado
+// IF TerraMarker.found = true
+	drawTerra( true );
+
 }
 
 function loadingResources( ){
@@ -306,6 +344,46 @@ function drawSol( axisEnabled ){
 		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
 	
 		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
+		gl.uniform3fv(shaderPlanets.uColor, color);
+	
+
+		for(var o = 0; o < model.length; o++) { 
+			console.log("chegou aqui!!");
+			draw(model[o], shaderPlanets, gl.TRIANGLES);
+		}
+}
+
+function drawTerra( axisEnabled ){
+		if( !TerraMarker.found ) return;
+
+		ViewMat.setLookAt(	0.0, 0.0, 0.0,
+						0.0, 0.0, -1.0,
+						0.0, 1.0, 0.0 );
+	    
+		ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
+
+		modelMat.setIdentity();
+		modelMat.multiply(TerraMarker.transMat);
+		modelMat.multiply(TerraMarker.rotMat);
+		modelMat.multiply(TerraMarker.scaleMat);
+
+		MVPMat.setIdentity();
+		MVPMat.multiply(ProjMat);
+		MVPMat.multiply(ViewMat);
+		MVPMat.multiply(modelMat);	
+		
+		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
+
+		try { 
+			gl.useProgram(shaderPlanets);
+		}catch(err){
+			alert(err);
+			console.error(err.description);
+		}
+		
+		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
+	
+		color[0] = 0.2; color[1] = 0.2; color[2] = 0.8;
 		gl.uniform3fv(shaderPlanets.uColor, color);
 	
 
