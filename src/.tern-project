@@ -4,6 +4,7 @@
   ],
   "loadEagerly": [
     "lib/*.js"
+    "*.js"
   ],
   "plugins": {
     "requirejs": {

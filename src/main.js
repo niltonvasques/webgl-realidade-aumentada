@@ -11,9 +11,13 @@
 */
 
 var gl;
+
+// SHADERS
 var shaderBaseImage	= null;
 var shaderAxis		= null;
 var shaderPlanets   	= null;
+var shaderTerra   	= null;
+
 var axis 		= null;
 var baseTexture		= null;
 var model		= new Array;
@@ -354,6 +358,7 @@ function drawSol( axisEnabled ){
 }
 
 function drawTerra( axisEnabled ){
+	
 		if( !TerraMarker.found ) return;
 
 		ViewMat.setLookAt(	0.0, 0.0, 0.0,
