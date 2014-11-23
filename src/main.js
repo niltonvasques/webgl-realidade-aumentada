@@ -13,15 +13,15 @@
 var gl;
 var shaderBaseImage	= null;
 var shaderAxis		= null;
-var shaderPlanets   = null;
-var axis 			= null;
+var shaderPlanets   	= null;
+var axis 		= null;
 var baseTexture		= null;
-var model			= new Array;
+var model		= new Array;
 var color 		= new Float32Array(3);
-var modelMat = new Matrix4();
-var ViewMat = new Matrix4();
-var ProjMat = new Matrix4();
-var MVPMat 	= new Matrix4();
+var modelMat 		= new Matrix4();
+var ViewMat 		= new Matrix4();
+var ProjMat 		= new Matrix4();
+var MVPMat 		= new Matrix4();
 var cameraPos 		= new Vector3();
 var cameraLook 		= new Vector3();
 var cameraUp 		= new Vector3();
@@ -32,7 +32,7 @@ var g_drawingInfo 	= null;	// The information for drawing 3D model
 // com o desenho do marker.
 // Aqui ficará declarado todos os marcadores que iremos utilizar na aplicação.
 //
-var Marker = new Object();
+var Marker 	= new Object();
 Marker.sol	= 24;
 
 var video, 
@@ -173,11 +173,37 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
 		pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
 		roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
-		
+
 		modelMat.setIdentity();
-		modelMat.rotate(yaw, 0.0, 1.0, 0.0);
-		modelMat.rotate(pitch, 1.0, 0.0, 0.0);
-		modelMat.rotate(roll, 0.0, 0.0, 1.0);
+		ViewMat.setIdentity();
+		ProjMat.setIdentity();
+
+		rotMat.setIdentity();
+		rotMat.rotate(yaw, 0.0, 1.0, 0.0);
+		rotMat.rotate(pitch, 1.0, 0.0, 0.0);
+		rotMat.rotate(roll, 0.0, 0.0, 1.0);
+
+		rotMat.setIdentity();
+		rotMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
+
+		scaleMat.setIdentity();
+		scaleMat.scale( modelSize, modelSize, modelSize );
+
+		modelMat.setIdentity();
+		modelMat.multiply(transMat);
+		modelMat.multiply(rotMat);
+		modelMat.multiply(scaleMat);
+
+		ViewMat.setLookAt(	0.0, 0.0, 0.0,
+						0.0, 0.0, -1.0,
+						0.0, 1.0, 0.0 );
+	    
+		ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
+
+		MVPMat.setIdentity();
+		MVPMat.multiply(ProjMat);
+		MVPMat.multiply(ViewMat);
+		MVPMat.multiply(modelMat);	
 		
 		/*transMat.setIdentity();
 		transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
@@ -187,15 +213,14 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 
 		//Aqui é parte do código que controla o modelo
 
-		modelMat.translate(pose.bestTranslation[0]/262.144, pose.bestTranslation[0]/262.144,0);
+		//modelMat.translate(pose.bestTranslation[0]/262.144, pose.bestTranslation[0]/262.144,0);
 		
 		try { 
-    		gl.useProgram(shaderPlanets);
+			gl.useProgram(shaderPlanets);
+		}catch(err){
+			alert(err);
+			console.error(err.description);
 		}
-	catch(err){
-        alert(err);
-        console.error(err.description);
-    	}
 
 		//modelMat.scale(0.5, 0.5, 0.5);
 		//modelMat.scale(modelSize, modelSize, modelSize);
@@ -203,14 +228,14 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		//modelMat.translate(pose.bestTranslation[0]/262.144, pose.bestTranslation[1]/262.144, -pose.bestTranslation[2]/262.144);
 		//modelMat.setIdentity();
 		//modelMat.scale(modelSize, modelSize, modelSize);
-
-		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, modelMat.elements);
+		
+		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
 	
 		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
 		gl.uniform3fv(shaderPlanets.uColor, color);
 	
 
-	for(var o = 0; o < model.length; o++) { 
+		for(var o = 0; o < model.length; o++) { 
 			console.log("chegou aqui!!");
 			draw(model[o], shaderPlanets, gl.TRIANGLES);
 		}
