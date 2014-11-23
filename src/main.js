@@ -150,6 +150,8 @@ function drawCorners(markers){
 function updateScenes(markers){ //As modificações foram feitas aqui!!
 	var corners, corner, pose, i;
 
+	SolMarker.found = false;
+
 	for(var m = 0; m < markers.length; m++ ){
 
 		corners = markers[m].corners;
@@ -165,18 +167,11 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		updateSolMarker( markers[m].id, pose );
 	}
  
-// Escolher se os modelos serão exibidos na posição anterior caso nenhum marcador seja encontrado 
-	if( markers.length == 0 ){
-		SolMarker.found = false;
-	}
 };
 
 function updateSolMarker( markerId, pose ){
+		
 		if( markerId != SolMarker.id ){
-			SolMarker.found = false;
-			SolMarker.transMat.setIdentity();
-			SolMarker.rotMat.setIdentity();
-			SolMarker.scaleMat.setIdentity();
 			return;
 		}
 
@@ -240,7 +235,6 @@ function drawScene(markers) {
 // Desenha o sol caso seu marcador tenha sido encontrado
 // IF SolMarker.found = true
 	drawSol( true );
-
 }
 
 function loadingResources( ){
