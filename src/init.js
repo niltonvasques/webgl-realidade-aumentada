@@ -1,55 +1,18 @@
-var gl;
-var shaderBaseImage	= null;
-var shaderAxis		= null;
-var shaderPlanets   = null;
-var axis 			= null;
-var baseTexture		= null;
-var model			= new Array;
-var color 		= new Float32Array(3);
-var modelMat = new Matrix4();
-var ViewMat = new Matrix4();
-var ProjMat = new Matrix4();
-var MVPMat 	= new Matrix4();
-var cameraPos 		= new Vector3();
-var cameraLook 		= new Vector3();
-var cameraUp 		= new Vector3();
-var g_objDoc 		= null;	// The information of OBJ file
-var g_drawingInfo 	= null;	// The information for drawing 3D model
+/*
+ * Universidade Federal da Bahia
+ * Disciplina: Computação Gráfica - MATA65
+ * Prof. Apolinário 
+ * Semestre: 2014.2
+ * 
+ * Trabalho Prático 1
+ * 
+ * Autores: Nilton Vasques Carvalho e Jean Francescoli
+ *
+*/
 
-
-
-// A biblioteca Aruco detecta os markers e atribui um id único de acordo
-// com o desenho do marker.
-// Aqui ficará declarado todos os marcadores que iremos utilizar na aplicação.
-//
-var Marker = new Object();
-Marker.sol	= 24;
-
-var video, 
-	videoImage, 
-	videoImageContext, 
-	videoTexture;
-
-var imageData, 
-	detector, 
-	posit;
-
-var modelSize 	= 90.0; //millimeters
-
-var rotMat 		= new Matrix4();
-var transMat 	= new Matrix4();
-var scaleMat 	= new Matrix4();
-
-
-var yaw 		= 0.0,
-	pitch 		= 0.0,
-	roll		= 0.0;
 
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 window.URL = window.URL || window.webkitURL;
-
-// ********************************************************
-// ********************************************************
 
 
 // ********************************************************
@@ -68,6 +31,78 @@ function initGL(canvas) {
 	return gl;
 }
 
+
+function getHtmlElements( ){
+
+	// assign variables to HTML elements
+	video = document.getElementById("monitor");
+	videoImage = document.getElementById("videoImage");
+	videoImageContext = videoImage.getContext("2d");
+	
+	// background color if no video present
+	videoImageContext.fillStyle = "#005337";
+	videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+	
+	canvas = document.getElementById("videoGL");
+
+}
+
+function initializeShaderBaseImagem( ){
+
+	shaderBaseImage = initShaders("baseImage", gl);
+	if (shaderBaseImage == null) {
+		alert("Erro na inicilizacao do shaderBaseImage!!");
+		return;
+	}
+
+	shaderBaseImage.vPositionAttr 	= gl.getAttribLocation(shaderBaseImage, "aVertexPosition");
+	shaderBaseImage.vTexAttr 		= gl.getAttribLocation(shaderBaseImage, "aVertexTexture");
+	shaderBaseImage.uMVPMat 		= gl.getUniformLocation(shaderBaseImage, "uMVPMat");
+	shaderBaseImage.SamplerUniform	= gl.getUniformLocation(shaderBaseImage, "uSampler");
+
+	if ( 	(shaderBaseImage.vertexPositionAttribute < 0) 	||
+			(shaderBaseImage.vertexTextAttribute < 0) 		||
+			(shaderBaseImage.SamplerUniform < 0) 			||
+			!shaderBaseImage.uMVPMat ) {
+		alert("shaderBaseImage attribute ou uniform nao localizado!");
+		return;
+	}
+}
+
+function initializeShaderAxis( ){
+
+	shaderAxis 					= initShaders("Axis", gl);	
+	shaderAxis.vPositionAttr 	= gl.getAttribLocation(shaderAxis, "aVertexPosition");		
+	shaderAxis.vColorAttr		= gl.getAttribLocation(shaderAxis, "aVertexColor");
+	shaderAxis.uMVPMat 			= gl.getUniformLocation(shaderAxis, "uMVPMat");
+	
+	if (	shaderAxis.vPositionAttr < 0 	|| 
+			shaderAxis.vColorAttr < 0 		|| 
+			!shaderAxis.uMVPMat	) {
+		console.log("Error getAttribLocation shaderAxis"); 
+		return;
+		}
+		
+	axis = initAxisVertexBuffer();
+	if (!axis) {
+		console.log('Failed to set the AXIS vertex information');
+		return;
+	}
+
+}
+
+function initializeShaderPlanets( ){
+
+	shaderPlanets 					= initShaders("Planets", gl);	
+	shaderPlanets.vPositionAttr 	= gl.getAttribLocation(shaderPlanets, "aVertexPosition");		
+	shaderPlanets.uColor 			= gl.getUniformLocation(shaderPlanets, "uColor");
+	shaderPlanets.uModelMat 		= gl.getUniformLocation(shaderPlanets, "uModelMat");
+	
+	if (shaderPlanets.vPositionAttr < 0 || shaderPlanets.uColor  < 0 || !shaderPlanets.uModelMat) {
+		console.log("Error getAttribLocation shaderPlanets"); 
+		return;
+	}
+}
 function readOBJFile(fileName, gl, scale, reverse) {
 	var request = new XMLHttpRequest();
 	
@@ -132,9 +167,9 @@ var groupModel = null;
 // ********************************************************
 function initBaseImage() {
 	
-var baseImage = new Object(); 
-var vPos = new Array;
-var vTex = new Array;
+	var baseImage = new Object(); 
+	var vPos = new Array;
+	var vTex = new Array;
 
 	vPos.push(-1.0); 	// V0
 	vPos.push(-1.0);
@@ -290,37 +325,4 @@ function initTexture() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	videoTexture.needsUpdate = false;
 }
-
-// ********************************************************
-// ********************************************************
-
-// ********************************************************
-// ********************************************************
-function animate() {
-    requestAnimationFrame(animate);
-	render();		
-}
-
-// ********************************************************
-// ********************************************************
-function render() {	
-	
-	if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
-		videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
-		videoTexture.needsUpdate = true;
-		imageData = videoImageContext.getImageData(0, 0, videoImage.width, videoImage.height);
-		
-		var markers = detector.detect(imageData);
-	
-			
-		drawCorners(markers);
-		
-
-		drawScene(markers);
-
-	}
-}
-
-// ********************************************************
-// ********************************************************
 
