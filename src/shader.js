@@ -1,11 +1,10 @@
 function drawTextQuad(o, shaderProgram, MVPMat) {
 	
-    try {
-    	gl.useProgram(shaderProgram);
-		}
-	catch(err){
-        alert(err);
-        console.error(err.description);
+	try {
+		gl.useProgram(shaderProgram);
+	} catch(err) {
+		alert(err);
+		console.error(err.description);
     	}
     	
  	gl.uniformMatrix4fv(shaderProgram.uMVPMat, false, MVPMat.elements);
@@ -20,21 +19,19 @@ function drawTextQuad(o, shaderProgram, MVPMat) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, o.vertexBuffer);
 		gl.vertexAttribPointer(shaderProgram.vPositionAttr, 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(shaderProgram.vPositionAttr);  
-		}
-	else {
+	} else {
 		alert("o.vertexBuffer == null");
 		return;
-		}
+	}
 
 	if (o.textureBuffer != null) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, o.textureBuffer);
 		gl.vertexAttribPointer(shaderProgram.vTexAttr, 2, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(shaderProgram.vTexAttr);
-		}
-	else {
+	} else {
 		alert("o.textureBuffer == null");
   		return;
-		}
+	}
    	
 	gl.drawArrays(gl.TRIANGLES, 0, o.numItems);
 }
@@ -45,11 +42,11 @@ function draw(o, shaderProgram, primitive) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, o.vertexBuffer);
 		gl.vertexAttribPointer(shaderProgram.vPositionAttr, 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(shaderProgram.vPositionAttr);  
-		}
+	}
 	else {
 		alert("o.vertexBuffer == null");
 		return;
-		}
+	}
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
 
@@ -61,12 +58,11 @@ function draw(o, shaderProgram, primitive) {
 // ********************************************************
 function drawAxis(o, shaderProgram, MVPMat) {
 
-    try {
-    	gl.useProgram(shaderProgram);
-		}
-	catch(err){
-        alert(err);
-        console.error(err.description);
+	try {
+		gl.useProgram(shaderProgram);
+	}catch(err){
+		alert(err);
+		console.error(err.description);
     	}
     	
  	gl.uniformMatrix4fv(shaderProgram.uMVPMat, false, MVPMat.elements);
@@ -75,8 +71,7 @@ function drawAxis(o, shaderProgram, MVPMat) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, o.vertexBuffer);
 		gl.vertexAttribPointer(shaderProgram.vPositionAttr, 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(shaderProgram.vPositionAttr);  
-		}
-	else {
+	} else {
 		alert("o.vertexBuffer == null");
 		return;
 	}
@@ -85,11 +80,10 @@ function drawAxis(o, shaderProgram, MVPMat) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, o.colorBuffer);
 		gl.vertexAttribPointer(shaderProgram.vColorAttr, 4, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(shaderProgram.vColorAttr);
-		}
-	else {
+	} else {
 		alert("o.colorBuffer == null");
   		return;
-		}
+	}
 
 	gl.drawArrays(gl.LINES, 0, o.numItems);
 }

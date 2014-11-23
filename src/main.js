@@ -150,16 +150,9 @@ function drawCorners(markers){
 function updateScenes(markers){ //As modificações foram feitas aqui!!
 	var corners, corner, pose, i;
 
-	var solIndex = -1;
 	for(var m = 0; m < markers.length; m++ ){
-		if( markers[m].id == SolMarker.id ){
-			solIndex = m;	
-		}
-	}
-  
-	if (markers.length > 0 && solIndex != -1) {
-		
-		corners = markers[solIndex].corners;
+
+		corners = markers[m].corners;
 		
 		for (i = 0; i < corners.length; ++ i) {
 			corner = corners[i];
@@ -168,15 +161,29 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		}
 		
 		pose = posit.pose(corners);
+					
+		updateSolMarker( markers[m].id, pose );
+	}
+ 
+// Escolher se os modelos serão exibidos na posição anterior caso nenhum marcador seja encontrado 
+	if( markers.length == 0 ){
+		SolMarker.found = false;
+	}
+};
+
+function updateSolMarker( markerId, pose ){
+		if( markerId != SolMarker.id ){
+			SolMarker.found = false;
+			SolMarker.transMat.setIdentity();
+			SolMarker.rotMat.setIdentity();
+			SolMarker.scaleMat.setIdentity();
+			return;
+		}
 
 		yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
 		pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
 		roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
 
-		modelMat.setIdentity();
-		ViewMat.setIdentity();
-		ProjMat.setIdentity();
-		
 		SolMarker.found = true;
 
 		SolMarker.rotMat.setIdentity();
@@ -190,29 +197,16 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		SolMarker.scaleMat.setIdentity();
 		SolMarker.scaleMat.scale( modelSize, modelSize, modelSize );
 
-
-		console.log(yaw);
+		/*console.log(yaw);
 		console.log(pitch);
 		console.log(roll);
+		*/
 
 		/*console.log("pose.bestTranslation.x = " + pose.bestTranslation[0]/262.144);
 		console.log("pose.bestTranslation.y = " + pose.bestTranslation[1]/262.144);
 		console.log("pose.bestTranslation.z = " + -pose.bestTranslation[2]/262.144);
 	*/
-	} else {
-		SolMarker.found = false;
-		SolMarker.transMat.setIdentity();
-		SolMarker.rotMat.setIdentity();
-		SolMarker.scaleMat.setIdentity();
-
-		transMat.setIdentity();
-		rotMat.setIdentity();
-		scaleMat.setIdentity();
-		yaw 	= 0.0;
-		pitch 	= 0.0;
-		roll 	= 0.0;
-	}
-};
+}
 
 function drawScene(markers) {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -243,21 +237,9 @@ function drawScene(markers) {
     
 	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
-// Configura o Axis na posição do marcador do sol
-	modelMat.setIdentity();
-	modelMat.multiply(SolMarker.transMat);
-	modelMat.multiply(SolMarker.rotMat);
-	modelMat.multiply(SolMarker.scaleMat);
-	
-	MVPMat.setIdentity();
-	MVPMat.multiply(ProjMat);
-	MVPMat.multiply(ViewMat);
-	MVPMat.multiply(modelMat);
-	
-	drawAxis(axis, shaderAxis, MVPMat);
 // Desenha o sol caso seu marcador tenha sido encontrado
 // IF SolMarker.found = true
-	drawSol( );
+	drawSol( true );
 
 }
 
@@ -299,7 +281,7 @@ function configureCameraPosition( ){
 	cameraUp.elements[2] 	= 0.0;
 }
 
-function drawSol( ){
+function drawSol( axisEnabled ){
 		if( !SolMarker.found ) return;
 
 		ViewMat.setLookAt(	0.0, 0.0, 0.0,
@@ -318,7 +300,8 @@ function drawSol( ){
 		MVPMat.multiply(ViewMat);
 		MVPMat.multiply(modelMat);	
 		
-		
+		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
+
 		try { 
 			gl.useProgram(shaderPlanets);
 		}catch(err){
