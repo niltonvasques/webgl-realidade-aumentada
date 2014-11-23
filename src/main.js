@@ -171,7 +171,7 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		
 		pose = posit.pose(corners);
 					
-		//updateSolMarker( markers[m].id, pose );
+		updateSolMarker( markers[m].id, pose );
 		updateTerraMarker( markers[m].id, pose );
 	}
  
