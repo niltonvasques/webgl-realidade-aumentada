@@ -89,6 +89,8 @@
 	</script>
 
 	<script id="terra-vs" type="x-shader/x-vertex">
+		
+		attribute vec2 aVTexCoord;
 		attribute vec3 aVertexPosition;
 		attribute vec3 aVNorm;
 		
@@ -99,12 +101,15 @@
 
 		varying vec3 vNormal;
 		varying vec3 vPosW;
+		varying vec2 vTextCoord;
 
 		void main( void ) {
 	
 			gl_Position 	= uProjMat * uViewMat * uModelMat * vec4( aVertexPosition.xyz, 1.0 );
 			vPosW 	= ( uModelMat * vec4( aVertexPosition, 1.0 ) ).xyz;
 
+			vTextCoord = aVTexCoord;
+			
 			vNormal 	= normalize( vec3( uNormMat * vec4( aVNorm, 1.0 ) ) );
 
 		}	
@@ -118,13 +123,18 @@
 		uniform vec3 uCamPos;
 		uniform vec3 uLPos;
 		uniform vec4 uLColor;
+		varying vec2 vTextCoord;	
+
+		
+		uniform sampler2D uSampler0;
+		
 		uniform vec4 uMatAmb;
 		uniform vec4 uMatDif;
 		uniform vec4 uMatSpec;
 		uniform float uExpSpec;
 		
 		void main( void ) {
-			
+			vec4 texel = texture2D(uSampler0, vTextCoord);
 			vec4 ambient	= uLColor * uMatAmb;
 
 			vec3 vL 	= normalize( uLPos - vPosW );
@@ -151,6 +161,7 @@
 			gl_FragColor 	= ( ambient + diffuse + specular ) ;
 		}	
 	</script>
+
 
 <script type="text/javascript" src="../lib/webgl-utils.js"></script>
 <script type="text/javascript" src="../lib/cuon-matrix.js"></script>

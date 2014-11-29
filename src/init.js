@@ -89,6 +89,35 @@ function initializeShaderAxis( ){
 		return;
 	}
 
+
+function initializeShaderTexture()
+{
+	texShader = initShaders("texture", gl);
+	if (!textShader) {
+		console.log("ERROR: create textShader");
+		return;
+		}
+	textShader.vPositionAttr 	= gl.getAttribLocation(textShader, "aVPosition");		
+	textShader.vNormalAttr 		= gl.getAttribLocation(textShader, "aVNorm");
+	textShader.vTexCoordAttr 	= gl.getAttribLocation(textShader, "aVTexCoord");
+	textShader.uSampler 		= gl.getUniformLocation(textShader, "uSampler");
+	textShader.uModelMat 		= gl.getUniformLocation(textShader, "uModelMat");
+	textShader.uViewMat 		= gl.getUniformLocation(textShader, "uViewMat");
+	textShader.uProjMat 		= gl.getUniformLocation(textShader, "uProjMat");
+	textShader.uNormMat 		= gl.getUniformLocation(textShader, "uNormMat");
+	
+	textShader.uSampler	 		= gl.getUniformLocation(textShader, "uSampler");	
+	
+	if (textShader.vPositionAttr < 0 	|| 
+		textShader.vColorAttr < 0 		|| 
+		textShader.vTexCoordAttr < 0 	|| 
+		!textShader.uModelMat 			|| 
+		!textShader.uViewMat 			|| 
+		!textShader.uProjMat 			|| 
+		!textShader.uNormMat ) {
+		console.log("Error getAttribLocation textShader"); 
+		return;
+		}
 }
 
 function initializeShaderPlanets( ){
@@ -363,7 +392,6 @@ var vColor 	= new Array;
 // ********************************************************
 // ********************************************************
 function initTexture() {
-
 	videoTexture = gl.createTexture();		
 	gl.bindTexture(gl.TEXTURE_2D, videoTexture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -371,3 +399,25 @@ function initTexture() {
 	videoTexture.needsUpdate = false;
 }
 
+function initTexture(filename)
+{
+	var image = new Image();
+	image.onload = function() {
+		var t = gl.createTexture();
+
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+		gl.bindTexture(gl.TEXTURE_2D, t);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		
+		texture.push(t);
+		textureOK++;
+		}
+	image.src = filename;
+	}
+
+}
