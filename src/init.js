@@ -103,6 +103,43 @@ function initializeShaderPlanets( ){
 		return;
 	}
 }
+
+function initializeShaderTerra( ){
+
+	shaderTerra 			= initShaders( "terra", gl );
+
+	shaderTerra.vPositionAttr 	= gl.getAttribLocation( shaderTerra, "aVertexPosition" );
+	shaderTerra.aVNorm		= gl.getAttribLocation( shaderTerra, "aVNorm" );
+
+	shaderTerra.uModelMat		= gl.getUniformLocation( shaderTerra, "uModelMat" );
+	shaderTerra.uViewMat		= gl.getUniformLocation( shaderTerra, "uViewMat" );
+	shaderTerra.uProjMat		= gl.getUniformLocation( shaderTerra, "uProjMat" );
+	shaderTerra.uNormMat		= gl.getUniformLocation( shaderTerra, "uNormMat" );
+
+	shaderTerra.uCamPos		= gl.getUniformLocation( shaderTerra, "uCamPos" );
+	shaderTerra.uLPos		= gl.getUniformLocation( shaderTerra, "uLPos" );
+	shaderTerra.uLColor		= gl.getUniformLocation( shaderTerra, "uLColor" );
+	shaderTerra.uMatAmb		= gl.getUniformLocation( shaderTerra, "uMatAmb" );
+	shaderTerra.uMatDif		= gl.getUniformLocation( shaderTerra, "uMatDif" );
+	shaderTerra.uMatSpec		= gl.getUniformLocation( shaderTerra, "uMatSpec" );
+	shaderTerra.uExpSpec		= gl.getUniformLocation( shaderTerra, "uExpSpec" );
+
+	if( !shaderTerra ) {
+		alert( "Could not initialize shader Terra" );
+	}else{
+ 		if( shaderTerra.aVertexPosition < 0 || shaderTerra.aVNorm < 0 ){
+			alert( "ERROR: getAttribLocation shaderTerra" );
+		}
+ 		if( !shaderTerra.uModelMat || !shaderTerra.uProjMat || !shaderTerra.uNormMat
+			|| !shaderTerra.uCamPos  || !shaderTerra.uLPos
+			|| !shaderTerra.uLColor  || !shaderTerra.uMatSpec 
+			|| !shaderTerra.uMatAmb  || !shaderTerra.uMatDif
+			|| !shaderTerra.uExpSpec ){
+			alert( "ERROR: getUniformLocation shaderTerra" );
+		}
+	}
+}
+
 function readOBJFile(fileName, gl, scale, reverse) {
 	var request = new XMLHttpRequest();
 	
@@ -156,6 +193,14 @@ var groupModel = null;
 		else
 			alert("ERROR: can not create indexBuffer");
 		
+		groupModel.normalBuffer = gl.createBuffer( );
+		if( groupModel.normalBuffer ){
+			gl.bindBuffer( gl.ARRAY_BUFFER, groupModel.normalBuffer );
+			gl.bufferData( gl.ARRAY_BUFFER, g_drawingInfo.normals[o], gl.STATIC_DRAW );
+		}else{
+			alert( "ERROR: Can't create normal buffer " );
+		}
+
 		groupModel.numObjects = g_drawingInfo.indices[o].length;
 		model.push(groupModel);
 		}

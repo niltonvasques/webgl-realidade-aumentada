@@ -11,9 +11,13 @@
 */
 
 var gl;
+
+// SHADERS
 var shaderBaseImage	= null;
 var shaderAxis		= null;
 var shaderPlanets   	= null;
+var shaderTerra   	= null;
+
 var axis 		= null;
 var baseTexture		= null;
 var model		= new Array;
@@ -22,9 +26,11 @@ var modelMat 		= new Matrix4();
 var ViewMat 		= new Matrix4();
 var ProjMat 		= new Matrix4();
 var MVPMat 		= new Matrix4();
+
 var cameraPos 		= new Vector3();
 var cameraLook 		= new Vector3();
 var cameraUp 		= new Vector3();
+
 var g_objDoc 		= null;	// The information of OBJ file
 var g_drawingInfo 	= null;	// The information for drawing 3D model
 
@@ -37,12 +43,20 @@ SolMarker.id		= 24;
 SolMarker.rotMat 	= new Matrix4( );
 SolMarker.transMat 	= new Matrix4( );
 SolMarker.scaleMat 	= new Matrix4( );
+SolMarker.modelMat 	= new Matrix4( );
+SolMarker.lightColor	= new Vector4( );
 
 var TerraMarker 	= new Object();
 TerraMarker.id		= 1;
+TerraMarker.normMat 	= new Matrix4( );
 TerraMarker.rotMat 	= new Matrix4( );
 TerraMarker.transMat 	= new Matrix4( );
 TerraMarker.scaleMat 	= new Matrix4( );
+TerraMarker.lightColor	= new Vector4( );
+TerraMarker.matAmb	= new Vector4( );
+TerraMarker.matDif	= new Vector4( );
+TerraMarker.matSpec	= new Vector4( );
+TerraMarker.Ns 		= 100.0;
 
 var video, 
 	videoImage, 
@@ -90,6 +104,8 @@ function main() {
 	initializeShaderAxis( );
 			
 	initializeShaderPlanets( );	
+
+	initializeShaderTerra( );
 
 	// Loadin resources, fica aguardando o carregamento dos materiais e objetos
 	// Após o carregamento é dado início a renderização através do mainloop animate/render.
@@ -288,7 +304,6 @@ function loadingResources( ){
 			configureCameraPosition( );	
 		}
 		if (model.length > 0) {
-			animate();
 			rotMat.setIdentity();
 			transMat.setIdentity();
 			animate();
@@ -322,15 +337,15 @@ function drawSol( axisEnabled ){
 	    
 		ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
-		modelMat.setIdentity();
-		modelMat.multiply(SolMarker.transMat);
-		modelMat.multiply(SolMarker.rotMat);
-		modelMat.multiply(SolMarker.scaleMat);
+		SolMarker.modelMat.setIdentity();
+		SolMarker.modelMat.multiply(SolMarker.transMat);
+		SolMarker.modelMat.multiply(SolMarker.rotMat);
+		SolMarker.modelMat.multiply(SolMarker.scaleMat);
 
 		MVPMat.setIdentity();
 		MVPMat.multiply(ProjMat);
 		MVPMat.multiply(ViewMat);
-		MVPMat.multiply(modelMat);	
+		MVPMat.multiply(SolMarker.modelMat);	
 		
 		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
 
@@ -354,41 +369,111 @@ function drawSol( axisEnabled ){
 }
 
 function drawTerra( axisEnabled ){
-		if( !TerraMarker.found ) return;
-
-		ViewMat.setLookAt(	0.0, 0.0, 0.0,
-						0.0, 0.0, -1.0,
-						0.0, 1.0, 0.0 );
-	    
-		ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
-
-		modelMat.setIdentity();
-		modelMat.multiply(TerraMarker.transMat);
-		modelMat.multiply(TerraMarker.rotMat);
-		modelMat.multiply(TerraMarker.scaleMat);
-
-		MVPMat.setIdentity();
-		MVPMat.multiply(ProjMat);
-		MVPMat.multiply(ViewMat);
-		MVPMat.multiply(modelMat);	
-		
-		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
-
-		try { 
-			gl.useProgram(shaderPlanets);
-		}catch(err){
-			alert(err);
-			console.error(err.description);
-		}
-		
-		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
 	
-		color[0] = 0.2; color[1] = 0.2; color[2] = 0.8;
-		gl.uniform3fv(shaderPlanets.uColor, color);
-	
+	if( !TerraMarker.found ) return;
 
-		for(var o = 0; o < model.length; o++) { 
-			console.log("chegou aqui!!");
-			draw(model[o], shaderPlanets, gl.TRIANGLES);
-		}
+	ViewMat.setLookAt(	0.0, 0.0, 0.0,
+					0.0, 0.0, -1.0,
+					0.0, 1.0, 0.0 );
+    
+	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
+
+	modelMat.setIdentity();
+	modelMat.multiply(TerraMarker.transMat);
+	modelMat.multiply(TerraMarker.rotMat);
+	modelMat.multiply(TerraMarker.scaleMat);
+
+	TerraMarker.normMat.setIdentity();
+	TerraMarker.normMat.setInverseOf( modelMat );
+	TerraMarker.normMat.transpose();
+
+	TerraMarker.lightColor.elements[0] = 0.2;
+	TerraMarker.lightColor.elements[1] = 0.2;
+	TerraMarker.lightColor.elements[2] = 0.8;
+	TerraMarker.lightColor.elements[3] = 1.0;
+
+	TerraMarker.matAmb.elements[0] = 0.3;
+	TerraMarker.matAmb.elements[1] = 0.3;
+	TerraMarker.matAmb.elements[2] = 0.3;
+	TerraMarker.matAmb.elements[3] = 1.0;
+
+	TerraMarker.matDif.elements[0] = 0.8;
+	TerraMarker.matDif.elements[1] = 0.8;
+	TerraMarker.matDif.elements[2] = 0.8;
+	TerraMarker.matDif.elements[3] = 1.0;
+
+	TerraMarker.matSpec.elements[0] = 0.7;
+	TerraMarker.matSpec.elements[1] = 0.7;
+	TerraMarker.matSpec.elements[2] = 0.7;
+	TerraMarker.matSpec.elements[3] = 1.0;
+
+	TerraMarker.Ns	= 10.0;
+
+	MVPMat.setIdentity();
+	MVPMat.multiply(ProjMat);
+	MVPMat.multiply(ViewMat);
+	MVPMat.multiply(modelMat);	
+
+	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
+	
+	console.log( MVPMat.elements );
+
+	try { 
+		gl.useProgram(shaderTerra);
+	}catch(err){
+		alert(err);
+		console.error(err.description);
+	}
+	//
+	//gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
+
+	//color[0] = 0.2; color[1] = 0.2; color[2] = 0.8;
+	//gl.uniform3fv(shaderPlanets.uColor, color);
+
+
+	//for(var o = 0; o < model.length; o++) { 
+	//	console.log("chegou aqui!!");
+	//	draw(model[o], shaderPlanets, gl.TRIANGLES);
+	//}
+
+	gl.uniformMatrix4fv( shaderTerra.uNormMat, false, TerraMarker.normMat.elements );
+	gl.uniformMatrix4fv( shaderTerra.uModelMat, false, modelMat.elements );	
+	gl.uniformMatrix4fv( shaderTerra.uViewMat, false, ViewMat.elements );
+	gl.uniformMatrix4fv( shaderTerra.uProjMat, false, ProjMat.elements );
+
+
+	var solLightPos 	= new Vector4( );
+	solLightPos.elements[0] = 0.0;
+	solLightPos.elements[1] = 0.0;
+	solLightPos.elements[2] = 0.0;
+
+	gl.uniform3fv( shaderTerra.uCamPos, cameraPos.elements );
+	gl.uniform4fv( shaderTerra.uLColor, TerraMarker.lightColor.elements );
+	gl.uniform3fv( shaderTerra.uLPos, solLightPos.elements );
+	gl.uniform3fv( shaderTerra.uCamPos, cameraPos.elements );
+	
+	gl.uniform4fv( shaderTerra.uMatSpec, TerraMarker.matSpec.elements );
+	gl.uniform4fv( shaderTerra.uMatAmb, TerraMarker.matAmb.elements );
+	gl.uniform4fv( shaderTerra.uMatDif, TerraMarker.matDif.elements );
+	gl.uniform1f( shaderTerra.uExpSpec, TerraMarker.Ns );
+
+	workaroundFixBindAttribZeroProblem( );
+	
+	for( var o = 0; o < model.length; o++ ){
+		draw( model[o], shaderTerra, gl.TRIANGLES );
+	}
+}
+
+// Basically, vertex attrib 0 has to be enabled or else OpenGL 
+// will not render where as OpenGL ES 2.0 will. 
+// https://www.khronos.org/webgl/public-mailing-list/archives/1005/msg00053.html
+function workaroundFixBindAttribZeroProblem(){
+	try{
+		gl.bindBuffer( gl.ARRAY_BUFFER, model[0].vertexBuffer );
+		gl.vertexAttribPointer( 0, 3, gl.FLOAT, false, 0, 0 );
+		gl.enableVertexAttribArray( 0 );
+        }catch( err ){
+                alert( err );
+                console.log( err.description );
+        }
 }

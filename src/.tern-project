@@ -3,7 +3,8 @@
     "browser"
   ],
   "loadEagerly": [
-    "lib/*.js"
+    "lib/*.js",
+    "*.js"
   ],
   "plugins": {
     "requirejs": {
