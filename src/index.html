@@ -94,19 +94,16 @@
 		varying vec3 vNormal;
 		varying vec3 vPosW;
 		varying vec2 vTextCoord;	
-
 		void main( void ) {
 	
 			gl_Position 	= uProjMat * uViewMat * uModelMat * vec4( aVertexPosition.xyz, 1.0 );
 			vPosW 	= ( uModelMat * vec4( aVertexPosition, 1.0 ) ).xyz;
 			vNormal 	= normalize( vec3( uNormMat * vec4( aVNorm, 1.0 ) ) );
 		//	vTextCoord = aVTexCoord;
-
 		}	
 	</script>
 	<script id="terra-fs" type="x-shader/x-fragment">
 		precision mediump float;
-
 		varying vec2 vTextCoord;		
 		uniform sampler2D uSampler0;
 	
@@ -122,7 +119,6 @@
 		
 		void main( void ) {
 		    vec4 texel = texture2D(uSampler0, vTextCoord);
-
 			vec4 ambient	= uLColor * uMatAmb;
 			vec3 vL 	= normalize( uLPos - vPosW );
 			

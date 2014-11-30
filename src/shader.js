@@ -47,28 +47,27 @@ function draw(o, shaderProgram, primitive) {
 		alert("o.vertexBuffer == null");
 		return;
 	}
-	//gl.uniform1i(textShader.uSampler, 0);
-/*
+	gl.uniform1i(shaderTerra.uSampler, 0);
+
 	if (o.texCoordBuffer != null) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, o.texCoordBuffer);
-		gl.vertexAttribPointer(shaderProgram.vTexCoordAttr, 2, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(shaderProgram.vTexCoordAttr);
+		gl.vertexAttribPointer(shaderProgram.vTexCoordAttr, 2, gl.FLOAT, false, 0, 0); //problema aqui
+		gl.enableVertexAttribArray(shaderProgram.vTexCoordAttr); //problema aqui
 		}
 	else
 		alert("o.texCoordBuffer == null");
 
-*/
-/*
+
 	if (texture[o.Material] != null)
 	{
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, texture[[o.Material]]);
 	}
-*/
+
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
 
 	gl.drawElements(primitive, o.numObjects, gl.UNSIGNED_SHORT, 0);
-//	gl.bindTexture(gl.TEXTURE_2D, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 
@@ -106,8 +105,3 @@ function drawAxis(o, shaderProgram, MVPMat) {
 	gl.drawArrays(gl.LINES, 0, o.numItems);
 }
 
-
-		
-	
-
-	

@@ -214,8 +214,15 @@ var groupModel = null;
 		
 
 		groupModel.numObjects = g_drawingInfo.indices[o].length;
+		groupModel.Material 	= g_drawingInfo.materials[o];
+
 		model.push(groupModel);
 		}
+		for(var i = 0; i < g_drawingInfo.mtl.length; i++) 
+			for(var j = 0; j < g_drawingInfo.mtl[i].materials.length; j++) 
+				material.push(g_drawingInfo.mtl[i].materials[j]);
+
+			initEarthTexture();
 }
 
 
@@ -383,17 +390,38 @@ function initTexture() {
 	videoTexture.needsUpdate = false;
 }
 
-function initTT()
+function initEarthTexture()
 {
-	terraTextura = gl.createTexture();
-	terraTextura.image = new image();
-	terraTextura.image.onload = function()
+		for(var i = 0 ; i < g_drawingInfo.mtl.length ; i++) {
+		var m = g_drawingInfo.mtl[i];
+		for(var j = 0 ; j < m.materials.length ; j++) {
+			if (m.materials[j].mapKd != "") {
+				initEarthTexture(m.materials[j].mapKd);
+				}
+			}
+		}
 
-{
-	tratarTextura(terraTextura);
 }
 
-terratextura.image.src = "xadrez.gif";
-shaderTerra.samplerUniform = gl.getUniformLocation(shaderTerra, "uSampler");
+function initEarthTexture(filename) {
+	
+	var image = new Image();
+	
+	image.onload = function() {
+		
+		var t = gl.createTexture();
+		
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+		gl.bindTexture(gl.TEXTURE_2D, t);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		
+		texture.push(t);
+		textureOK++;
+		}
+	image.src = filename;
 }
-
