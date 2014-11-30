@@ -39,7 +39,7 @@ var g_drawingInfo 	= null;	// The information for drawing 3D model
 // Aqui ficará declarado todos os marcadores que iremos utilizar na aplicação.
 //
 var SolMarker 		= new Object();
-SolMarker.id		= 25;
+SolMarker.id		= 24;
 SolMarker.rotMat 	= new Matrix4( );
 SolMarker.transMat 	= new Matrix4( );
 SolMarker.scaleMat 	= new Matrix4( );
@@ -48,7 +48,7 @@ SolMarker.mvpMat 	= new Matrix4( );
 SolMarker.lightColor	= new Vector4( );
 
 var TerraMarker 	= new Object();
-TerraMarker.id		= 24;
+TerraMarker.id		= 25;
 TerraMarker.normMat 	= new Matrix4( );
 TerraMarker.rotMat 	= new Matrix4( );
 TerraMarker.transMat 	= new Matrix4( );
@@ -375,7 +375,6 @@ function drawSol( axisEnabled ){
 	
 
 		for(var o = 0; o < model.length; o++) { 
-			console.log("chegou aqui!!");
 			draw(model[o], shaderPlanets, gl.TRIANGLES);
 		}
 }
@@ -494,7 +493,7 @@ function drawTerra( axisEnabled ){
 	gl.uniform4fv( shaderTerra.uMatDif, TerraMarker.matDif.elements );
 	gl.uniform1f( shaderTerra.uExpSpec, TerraMarker.Ns );
 
-	workaroundFixBindAttribZeroProblem( );
+	//workaroundFixBindAttribZeroProblem( );
 	
 	for( var o = 0; o < model.length; o++ ){
 		draw( model[o], shaderTerra, gl.TRIANGLES );
@@ -540,7 +539,6 @@ function drawSiriusStar( axisEnabled ){
 	
 
 		for(var o = 0; o < model.length; o++) { 
-			console.log("chegou aqui!!");
 			draw(model[o], shaderPlanets, gl.TRIANGLES);
 		}
 }
