@@ -118,6 +118,7 @@ function initializeShaderTerra( ){
 
 	shaderTerra.uCamPos		= gl.getUniformLocation( shaderTerra, "uCamPos" );
 	shaderTerra.uLPos		= gl.getUniformLocation( shaderTerra, "uLPos" );
+	shaderTerra.uSiriusPos		= gl.getUniformLocation( shaderTerra, "uSiriusPos" );
 	shaderTerra.uLColor		= gl.getUniformLocation( shaderTerra, "uLColor" );
 	shaderTerra.uMatAmb		= gl.getUniformLocation( shaderTerra, "uMatAmb" );
 	shaderTerra.uMatDif		= gl.getUniformLocation( shaderTerra, "uMatDif" );
@@ -131,7 +132,7 @@ function initializeShaderTerra( ){
 			alert( "ERROR: getAttribLocation shaderTerra" );
 		}
  		if( !shaderTerra.uModelMat || !shaderTerra.uProjMat || !shaderTerra.uNormMat
-			|| !shaderTerra.uCamPos  || !shaderTerra.uLPos
+			|| !shaderTerra.uCamPos   
 			|| !shaderTerra.uLColor  || !shaderTerra.uMatSpec 
 			|| !shaderTerra.uMatAmb  || !shaderTerra.uMatDif
 			|| !shaderTerra.uExpSpec ){

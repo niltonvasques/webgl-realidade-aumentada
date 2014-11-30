@@ -107,20 +107,22 @@
 		varying vec3 vPosW;
 		uniform vec3 uCamPos;
 		uniform vec3 uLPos;
+		uniform vec3 uSiriusPos;
 		uniform vec4 uLColor;
 		uniform vec4 uMatAmb;
 		uniform vec4 uMatDif;
 		uniform vec4 uMatSpec;
 		uniform float uExpSpec;
 		
-		void main( void ) {
-			
+
+		vec4 phong( vec3 light ){
+		
 			vec4 ambient	= uLColor * uMatAmb;
-			vec3 vL 	= normalize( uLPos - vPosW );
+			vec3 vL 	= normalize( light - vPosW );
 			
 			float teta 	= max( dot( vL, vNormal ), 0.0 );
 			// Calculado a distância entre a luz e o vértice
-			float d		= distance( vPosW, uLPos );
+			float d		= distance( vPosW, light );
 			//A luz difusa é então multiplicada pelo inverso da distância
 			//vec4 nMatDif	= uMatDif * 1.0 / d;
 			//vec4 nMatSpec	= uMatSpec * 1.0 / d;
@@ -132,8 +134,15 @@
 			vec3 vR		= normalize( reflect( -vL, vNormal ) );
 			float omega	= max( dot( vV, vR ), 0.0 );
 			vec4 specular	= uLColor * nMatSpec * pow( omega, uExpSpec );
+
+			return ( ambient + diffuse + specular );
+		}
+
+		void main( void ) {
 			
-			gl_FragColor 	= ( ambient + diffuse + specular ) ;
+			
+			//gl_FragColor 	=  phong( uLPos ) + phong( uSiriusPos );
+			gl_FragColor 	=  phong( uSiriusPos );
 		}	
 	</script>
 
@@ -163,10 +172,10 @@
     <div id="output"> </div>
     <br/>
 	<div style="text-align: center;">
-		<canvas id="videoGL" width="640" height="480" style="visibility: visible;"></canvas>
+		<canvas id="videoGL" width="320" height="240" style="visibility: visible;"></canvas>
 	</div>
-	<video id="monitor" autoplay width="640" height="480" style="visibility: hidden;"></video>
-	<canvas id="videoImage" width="512" height="512" style="visibility: hidden;"></canvas>
+	<video id="monitor" autoplay width="320" height="240" style="visibility: hidden;"></video>
+	<canvas id="videoImage" width="256" height="256" style="visibility: hidden;"></canvas>
 </body>
 
 </html>

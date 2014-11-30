@@ -39,15 +39,16 @@ var g_drawingInfo 	= null;	// The information for drawing 3D model
 // Aqui ficará declarado todos os marcadores que iremos utilizar na aplicação.
 //
 var SolMarker 		= new Object();
-SolMarker.id		= 24;
+SolMarker.id		= 25;
 SolMarker.rotMat 	= new Matrix4( );
 SolMarker.transMat 	= new Matrix4( );
 SolMarker.scaleMat 	= new Matrix4( );
 SolMarker.modelMat 	= new Matrix4( );
+SolMarker.mvpMat 	= new Matrix4( );
 SolMarker.lightColor	= new Vector4( );
 
 var TerraMarker 	= new Object();
-TerraMarker.id		= 1;
+TerraMarker.id		= 24;
 TerraMarker.normMat 	= new Matrix4( );
 TerraMarker.rotMat 	= new Matrix4( );
 TerraMarker.transMat 	= new Matrix4( );
@@ -57,6 +58,15 @@ TerraMarker.matAmb	= new Vector4( );
 TerraMarker.matDif	= new Vector4( );
 TerraMarker.matSpec	= new Vector4( );
 TerraMarker.Ns 		= 100.0;
+
+
+var SiriusStar 		= new Object();
+SiriusStar.rotMat 	= new Matrix4( );
+SiriusStar.transMat 	= new Matrix4( );
+SiriusStar.scaleMat 	= new Matrix4( );
+SiriusStar.modelMat 	= new Matrix4( );
+SiriusStar.mvpMat 	= new Matrix4( );
+SiriusStar.lightColor	= new Vector4( );
 
 var video, 
 	videoImage, 
@@ -281,6 +291,9 @@ function drawScene(markers) {
     
 	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
+
+	drawSiriusStar( true );
+
 // Desenha o sol caso seu marcador tenha sido encontrado
 // IF SolMarker.found = true
 	drawSol( true );
@@ -331,32 +344,31 @@ function configureCameraPosition( ){
 function drawSol( axisEnabled ){
 		if( !SolMarker.found ) return;
 
-		ViewMat.setLookAt(	0.0, 0.0, 0.0,
-						0.0, 0.0, -1.0,
-						0.0, 1.0, 0.0 );
-	    
-		ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
-
 		SolMarker.modelMat.setIdentity();
 		SolMarker.modelMat.multiply(SolMarker.transMat);
 		SolMarker.modelMat.multiply(SolMarker.rotMat);
 		SolMarker.modelMat.multiply(SolMarker.scaleMat);
 
-		MVPMat.setIdentity();
-		MVPMat.multiply(ProjMat);
-		MVPMat.multiply(ViewMat);
-		MVPMat.multiply(SolMarker.modelMat);	
+		MVPMat.setIdentity( );
+		MVPMat.multiply( ProjMat );
+		MVPMat.multiply( ViewMat );
+		MVPMat.multiply( SolMarker.modelMat );	
+
+		SolMarker.mvpMat.setIdentity( );
+		SolMarker.mvpMat.multiply( ProjMat );
+		SolMarker.mvpMat.multiply( ViewMat );
+		SolMarker.mvpMat.multiply( SolMarker.modelMat );
 		
 		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
 
 		try { 
-			gl.useProgram(shaderPlanets);
+			gl.useProgram( shaderPlanets );
 		}catch(err){
-			alert(err);
-			console.error(err.description);
+			alert( err );
+			console.error( err.description );
 		}
 		
-		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
+		gl.uniformMatrix4fv( shaderPlanets.uModelMat, false, MVPMat.elements );
 	
 		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
 		gl.uniform3fv(shaderPlanets.uColor, color);
@@ -372,16 +384,11 @@ function drawTerra( axisEnabled ){
 	
 	if( !TerraMarker.found ) return;
 
-	ViewMat.setLookAt(	0.0, 0.0, 0.0,
-					0.0, 0.0, -1.0,
-					0.0, 1.0, 0.0 );
-    
-	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
 	modelMat.setIdentity();
 	modelMat.multiply(TerraMarker.transMat);
-	modelMat.multiply(TerraMarker.rotMat);
-	modelMat.multiply(TerraMarker.scaleMat);
+	modelMat.multiply(TerraMarker.rotMat); 
+	modelMat.multiply(TerraMarker.scaleMat); 
 
 	TerraMarker.normMat.setIdentity();
 	TerraMarker.normMat.setInverseOf( modelMat );
@@ -441,15 +448,45 @@ function drawTerra( axisEnabled ){
 	gl.uniformMatrix4fv( shaderTerra.uViewMat, false, ViewMat.elements );
 	gl.uniformMatrix4fv( shaderTerra.uProjMat, false, ProjMat.elements );
 
+//Descobrir como cálcular as posições reais dos objetos
+	var solLightPos4 	= new Vector4( );
+	solLightPos4.elements[0] = 1.0;
+	solLightPos4.elements[1] = 1.0;
+	solLightPos4.elements[2] = 1.0;
 
-	var solLightPos 	= new Vector4( );
-	solLightPos.elements[0] = 0.0;
-	solLightPos.elements[1] = 0.0;
-	solLightPos.elements[2] = 0.0;
+	solLightPos4 = SolMarker.mvpMat.multiplyVector4( solLightPos4 );
+
+	var solLightPos = new Vector3( );
+	solLightPos.elements[0] = solLightPos4.elements[0];
+	solLightPos.elements[1] = solLightPos4.elements[1];
+	solLightPos.elements[2] = solLightPos4.elements[2];
+
+	console.log( "Sol Light Pos " );
+	console.log( solLightPos.elements[0] );
+	console.log( solLightPos.elements[1] );
+	console.log( solLightPos.elements[2] );
+
+	var siriusLightPos4 	= new Vector4( );
+	siriusLightPos4.elements[0] = 1.0;
+	siriusLightPos4.elements[1] = 1.0;
+	siriusLightPos4.elements[2] = 1.0;
+
+	siriusLightPos4 = SiriusStar.mvpMat.multiplyVector4( siriusLightPos4 );
+
+	var siriusLightPos = new Vector3( );
+	siriusLightPos.elements[0] = siriusLightPos4.elements[0];
+	siriusLightPos.elements[1] = siriusLightPos4.elements[1];
+	siriusLightPos.elements[2] = siriusLightPos4.elements[2];
+
+	console.log( "Sirius Light Pos " );
+	console.log( siriusLightPos.elements[0] );
+	console.log( siriusLightPos.elements[1] );
+	console.log( siriusLightPos.elements[2] );
 
 	gl.uniform3fv( shaderTerra.uCamPos, cameraPos.elements );
 	gl.uniform4fv( shaderTerra.uLColor, TerraMarker.lightColor.elements );
 	gl.uniform3fv( shaderTerra.uLPos, solLightPos.elements );
+	gl.uniform3fv( shaderTerra.uSiriusPos, siriusLightPos.elements );
 	gl.uniform3fv( shaderTerra.uCamPos, cameraPos.elements );
 	
 	gl.uniform4fv( shaderTerra.uMatSpec, TerraMarker.matSpec.elements );
@@ -462,6 +499,50 @@ function drawTerra( axisEnabled ){
 	for( var o = 0; o < model.length; o++ ){
 		draw( model[o], shaderTerra, gl.TRIANGLES );
 	}
+}
+
+function drawSiriusStar( axisEnabled ){
+
+		SiriusStar.scaleMat.setIdentity();
+		SiriusStar.scaleMat.scale( modelSize, modelSize, modelSize );
+
+		SiriusStar.transMat.setIdentity( );
+		SiriusStar.transMat.translate( 180, 120, -1000 );
+		
+		SiriusStar.modelMat.setIdentity();
+		SiriusStar.modelMat.multiply(SiriusStar.transMat);
+		SiriusStar.modelMat.multiply(SiriusStar.rotMat);
+		SiriusStar.modelMat.multiply(SiriusStar.scaleMat);
+
+		SiriusStar.mvpMat.setIdentity( );
+		SiriusStar.mvpMat.multiply( ProjMat );
+		SiriusStar.mvpMat.multiply( ViewMat );
+		SiriusStar.mvpMat.multiply( SiriusStar.modelMat );
+
+		MVPMat.setIdentity();
+		MVPMat.multiply(ProjMat);
+		MVPMat.multiply(ViewMat);
+		MVPMat.multiply(SiriusStar.modelMat);	
+		
+		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
+
+		try { 
+			gl.useProgram(shaderPlanets);
+		}catch(err){
+			alert(err);
+			console.error(err.description);
+		}
+		
+		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
+	
+		color[0] = 0.8; color[1] = 0.8; color[2] = 1.0;
+		gl.uniform3fv(shaderPlanets.uColor, color);
+	
+
+		for(var o = 0; o < model.length; o++) { 
+			console.log("chegou aqui!!");
+			draw(model[o], shaderPlanets, gl.TRIANGLES);
+		}
 }
 
 // Basically, vertex attrib 0 has to be enabled or else OpenGL 
