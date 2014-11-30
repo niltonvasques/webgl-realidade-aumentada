@@ -10,7 +10,6 @@
 		varying vec2 vTextureCoord;
 		uniform mat4 uMVPMat;
 		uniform vec3 uColor;
-
 		varying vec4 vColor;
 		
 		void main(void) {
@@ -22,7 +21,6 @@
 
 	<script id="baseImage-fs" type="x-shader/x-fragment">
 		precision mediump float;
-
 		uniform sampler2D uSampler;
 		
 		varying vec2 vTextureCoord;
@@ -47,7 +45,6 @@
 			
 			vColor = aVertexColor;
 		}
-
 	</script>
 
 	<script id="Axis-fs" type="x-shader/x-fragment">
@@ -74,8 +71,6 @@
 			
 			vColor = vec4(uColor, 1.0);
 		}
-
-
 	</script>
 
 	<script id="Planets-fs" type="x-shader/x-fragment">
@@ -89,8 +84,6 @@
 	</script>
 
 	<script id="terra-vs" type="x-shader/x-vertex">
-		
-		attribute vec2 aVTexCoord;
 		attribute vec3 aVertexPosition;
 		attribute vec3 aVNorm;
 		
@@ -98,20 +91,13 @@
 		uniform mat4 uViewMat;
 		uniform mat4 uProjMat;
 		uniform mat4 uNormMat;
-
 		varying vec3 vNormal;
 		varying vec3 vPosW;
-		varying vec2 vTextCoord;
-
 		void main( void ) {
 	
 			gl_Position 	= uProjMat * uViewMat * uModelMat * vec4( aVertexPosition.xyz, 1.0 );
 			vPosW 	= ( uModelMat * vec4( aVertexPosition, 1.0 ) ).xyz;
-
-			vTextCoord = aVTexCoord;
-			
 			vNormal 	= normalize( vec3( uNormMat * vec4( aVNorm, 1.0 ) ) );
-
 		}	
 	</script>
 	<script id="terra-fs" type="x-shader/x-fragment">
@@ -119,28 +105,20 @@
 		
 		varying vec3 vNormal;
 		varying vec3 vPosW;
-
 		uniform vec3 uCamPos;
 		uniform vec3 uLPos;
 		uniform vec4 uLColor;
-		varying vec2 vTextCoord;	
-
-		
-		uniform sampler2D uSampler0;
-		
 		uniform vec4 uMatAmb;
 		uniform vec4 uMatDif;
 		uniform vec4 uMatSpec;
 		uniform float uExpSpec;
 		
 		void main( void ) {
-			vec4 texel = texture2D(uSampler0, vTextCoord);
+			
 			vec4 ambient	= uLColor * uMatAmb;
-
 			vec3 vL 	= normalize( uLPos - vPosW );
 			
 			float teta 	= max( dot( vL, vNormal ), 0.0 );
-
 			// Calculado a distância entre a luz e o vértice
 			float d		= distance( vPosW, uLPos );
 			//A luz difusa é então multiplicada pelo inverso da distância
@@ -148,20 +126,16 @@
 			//vec4 nMatSpec	= uMatSpec * 1.0 / d;
 			vec4 nMatDif	= uMatDif ;
 			vec4 nMatSpec	= uMatSpec;
-
 			vec4 diffuse	= uLColor * nMatDif * teta;
 			
 			vec3 vV 	= normalize( uCamPos - vPosW );
 			vec3 vR		= normalize( reflect( -vL, vNormal ) );
-
-
 			float omega	= max( dot( vV, vR ), 0.0 );
 			vec4 specular	= uLColor * nMatSpec * pow( omega, uExpSpec );
 			
 			gl_FragColor 	= ( ambient + diffuse + specular ) ;
 		}	
 	</script>
-
 
 <script type="text/javascript" src="../lib/webgl-utils.js"></script>
 <script type="text/javascript" src="../lib/cuon-matrix.js"></script>
