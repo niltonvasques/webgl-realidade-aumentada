@@ -93,12 +93,14 @@
 		uniform mat4 uNormMat;
 		varying vec3 vNormal;
 		varying vec3 vPosW;
+		varying vec2 vTextCoord;	
+
 		void main( void ) {
 	
 			gl_Position 	= uProjMat * uViewMat * uModelMat * vec4( aVertexPosition.xyz, 1.0 );
 			vPosW 	= ( uModelMat * vec4( aVertexPosition, 1.0 ) ).xyz;
 			vNormal 	= normalize( vec3( uNormMat * vec4( aVNorm, 1.0 ) ) );
-			vTextCoord = aVTexCoord;
+		//	vTextCoord = aVTexCoord;
 
 		}	
 	</script>

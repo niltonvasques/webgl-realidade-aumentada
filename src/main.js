@@ -422,7 +422,7 @@ function drawTerra( axisEnabled ){
 
 	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
 	
-	console.log( MVPMat.elements );
+	//console.log( MVPMat.elements );
 
 	try { 
 		gl.useProgram(shaderTerra);
@@ -448,7 +448,7 @@ function drawTerra( axisEnabled ){
 	gl.uniformMatrix4fv( shaderTerra.uProjMat, false, ProjMat.elements );
 
 
-	var solLightPos 	= new Vector4( );
+	var solLightPos 	= new Vector3( );
 	solLightPos.elements[0] = 0.0;
 	solLightPos.elements[1] = 0.0;
 	solLightPos.elements[2] = 0.0;
