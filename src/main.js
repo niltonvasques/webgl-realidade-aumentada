@@ -78,6 +78,12 @@ var yaw 		= 0.0,
 	pitch 		= 0.0,
 	roll		= 0.0;
 
+//var textShader		= null;
+var material		= new Array;
+
+var texture			= new Array;
+var textureOK 		= 0;
+
 function main() {
 	// Initializing Camera 	
 	startCamera( );
