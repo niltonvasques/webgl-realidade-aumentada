@@ -17,6 +17,7 @@ var shaderBaseImage	= null;
 var shaderAxis		= null;
 var shaderPlanets   	= null;
 var shaderTerra   	= null;
+var shaderSolid 	= null;
 
 var axis 		= null;
 var baseTexture		= null;
@@ -48,7 +49,7 @@ SolMarker.mvpMat 	= new Matrix4( );
 SolMarker.lightColor	= new Vector4( );
 
 var TerraMarker 	= new Object();
-TerraMarker.id		= 25;
+TerraMarker.id		= 23;
 TerraMarker.normMat 	= new Matrix4( );
 TerraMarker.rotMat 	= new Matrix4( );
 TerraMarker.transMat 	= new Matrix4( );
@@ -67,6 +68,18 @@ SiriusStar.scaleMat 	= new Matrix4( );
 SiriusStar.modelMat 	= new Matrix4( );
 SiriusStar.mvpMat 	= new Matrix4( );
 SiriusStar.lightColor	= new Vector4( );
+
+var CubeMarker 		= new Object( );
+CubeMarker.id		= 1;
+CubeMarker.rotMat 		= new Matrix4( );
+CubeMarker.transMat 		= new Matrix4( );
+CubeMarker.scaleMat 		= new Matrix4( );
+CubeMarker.modelMat 		= new Matrix4( );
+CubeMarker.normalMat 		= new Matrix4( );
+CubeMarker.mvpMat 		= new Matrix4( );
+CubeMarker.lightColor		= new Vector4( );
+CubeMarker.angle 		= 0.0;
+CubeMarker.modelSize 		= 50.0;
 
 var video, 
 	videoImage, 
@@ -115,12 +128,43 @@ function main() {
 			
 	initializeShaderPlanets( );	
 
-	initializeShaderTerra( );
+//	initializeShaderTerra( );
 
-	// Loadin resources, fica aguardando o carregamento dos materiais e objetos
+	initSolidShader( );
+
+	initCubeVertexBuffers( gl );
+
+	// Loading resources, fica aguardando o carregamento dos materiais e objetos
 	// Após o carregamento é dado início a renderização através do mainloop animate/render.
 	loadingResources( );
 	
+}
+
+function initSolidShader( ){
+	var solidVShader = getScriptContent( "solid-vs" );
+	var solidFShader = getScriptContent( "solid-fs" );
+
+
+	// Initialize shaders
+	shaderSolid = createProgram(gl, solidVShader, solidFShader );   
+
+	if ( !shaderSolid ) {
+		console.log('Failed to intialize shaders.');
+		return;
+	}
+
+	// Get storage locations of attribute and uniform variables in program object for single color drawing
+	shaderSolid.a_Position = gl.getAttribLocation(shaderSolid, 'a_Position');
+	shaderSolid.a_Normal = gl.getAttribLocation(shaderSolid, 'a_Normal');
+	shaderSolid.u_MvpMatrix = gl.getUniformLocation(shaderSolid, 'u_MvpMatrix');
+	shaderSolid.u_NormalMatrix = gl.getUniformLocation(shaderSolid, 'u_NormalMatrix');
+
+	if (shaderSolid.a_Position < 0 || shaderSolid.a_Normal < 0 || 
+		!shaderSolid.u_MvpMatrix || !shaderSolid.u_NormalMatrix ) { 
+		console.log('Failed to get the storage location of attribute or uniform variable'); 
+		return;
+	}
+
 }
 
 /*
@@ -129,13 +173,13 @@ function main() {
  */
 function animate() {
 	requestAnimationFrame(animate);
+
 	render();		
 }
 
 // ********************************************************
 // ********************************************************
 function render() {	
-	
 	if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
 		videoImageContext.drawImage( video, 0, 0, videoImage.width, videoImage.height );
 		videoTexture.needsUpdate = true;
@@ -145,7 +189,6 @@ function render() {
 		drawCorners(markers);
 		
 		drawScene(markers);
-
 	}
 }
 
@@ -176,6 +219,52 @@ function drawCorners(markers){
 	}
 };
 
+function drawScene(markers) {
+	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+	gl.clear(gl.COLOR_BUFFER_BIT);
+	
+	if (!videoTexture.needsUpdate) 
+		return;
+	
+	modelMat.setIdentity();
+	ViewMat.setIdentity();
+	ProjMat.setIdentity();
+	ProjMat.setOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+	
+	MVPMat.setIdentity();
+	MVPMat.multiply(ProjMat);
+	MVPMat.multiply(ViewMat);
+	MVPMat.multiply(modelMat);
+		
+	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
+
+// Verifica os marcadores encontrados
+// Atualiza as matrizes de localização, translação e rotação dos objetos encontrados	
+	updateScenes( markers );
+
+	ViewMat.setLookAt(	0.0, 0.0, 0.0,
+    					0.0, 0.0, -1.0,
+    					0.0, 1.0, 0.0 );
+    
+	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
+
+	drawSiriusStar( true );
+
+// Desenha o sol caso seu marcador tenha sido encontrado
+// IF SolMarker.found = true
+	drawSol( true );
+
+	// Calculate the view projection matrix
+	var viewProjMatrix = new Matrix4();
+	viewProjMatrix.setPerspective(30.0, gl.viewportWidth / gl.viewportHeight, 1.0, 100.0);
+	viewProjMatrix.lookAt(0.0, 0.0, 15.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+	drawSolidCube( gl, shaderSolid );
+
+// Desenha a terra caso seu marcador tenha sido encontrado
+// IF TerraMarker.found = true
+//	drawTerra( true );
+}
 
 // ********************************************************
 // ********************************************************
@@ -198,9 +287,10 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		pose = posit.pose(corners);
 					
 		updateSolMarker( markers[m].id, pose );
-		updateTerraMarker( markers[m].id, pose );
+		updateCube( markers[m].id, pose );
+   		
+//		updateTerraMarker( markers[m].id, pose );
 	}
- 
 };
 
 function updateSolMarker( markerId, pose ){
@@ -262,46 +352,36 @@ function updateTerraMarker( markerId, pose ){
 }
 
 
-function drawScene(markers) {
-	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-	gl.clear(gl.COLOR_BUFFER_BIT);
-	
-	if (!videoTexture.needsUpdate) 
+var ANGLE_STEP = 30;   // The increments of rotation angle (degrees)
+var last = Date.now(); // Last time that this function was called
+function updateCube( markerId, pose ) {
+	var now = Date.now();   // Calculate the elapsed time
+	var elapsed = now - last;
+	last = now;
+	// Update the current rotation angle (adjusted by the elapsed time)
+	var newAngle = CubeMarker.angle + (ANGLE_STEP * elapsed) / 1000.0;
+	CubeMarker.angle = newAngle % 360;
+
+	if( markerId != CubeMarker.id ){
 		return;
-	
-	modelMat.setIdentity();
-	ViewMat.setIdentity();
-	ProjMat.setIdentity();
-	ProjMat.setOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-	
-	MVPMat.setIdentity();
-	MVPMat.multiply(ProjMat);
-	MVPMat.multiply(ViewMat);
-	MVPMat.multiply(modelMat);
-		
-	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
+	}
 
-// Verifica os marcadores encontrados
-// Atualiza as matrizes de localização, translação e rotação dos objetos encontrados	
-	updateScenes(markers);
-   		
-	ViewMat.setLookAt(	0.0, 0.0, 0.0,
-    					0.0, 0.0, -1.0,
-    					0.0, 1.0, 0.0 );
-    
-	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
+	yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
+	pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
+	roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
 
+	CubeMarker.found = true;
 
-	drawSiriusStar( true );
+	CubeMarker.rotMat.setIdentity();
+	CubeMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
+	CubeMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
+	CubeMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
 
-// Desenha o sol caso seu marcador tenha sido encontrado
-// IF SolMarker.found = true
-	drawSol( true );
+	CubeMarker.transMat.setIdentity();
+	CubeMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 
-// Desenha a terra caso seu marcador tenha sido encontrado
-// IF TerraMarker.found = true
-	drawTerra( true );
-
+	CubeMarker.scaleMat.setIdentity();
+	CubeMarker.scaleMat.scale( CubeMarker.modelSize, CubeMarker.modelSize, CubeMarker.modelSize );
 }
 
 function loadingResources( ){
@@ -342,41 +422,41 @@ function configureCameraPosition( ){
 }
 
 function drawSol( axisEnabled ){
-		if( !SolMarker.found ) return;
+	if( !SolMarker.found ) return;
 
-		SolMarker.modelMat.setIdentity();
-		SolMarker.modelMat.multiply(SolMarker.transMat);
-		SolMarker.modelMat.multiply(SolMarker.rotMat);
-		SolMarker.modelMat.multiply(SolMarker.scaleMat);
+	SolMarker.modelMat.setIdentity();
+	SolMarker.modelMat.multiply(SolMarker.transMat);
+	SolMarker.modelMat.multiply(SolMarker.rotMat);
+	SolMarker.modelMat.multiply(SolMarker.scaleMat);
 
-		MVPMat.setIdentity( );
-		MVPMat.multiply( ProjMat );
-		MVPMat.multiply( ViewMat );
-		MVPMat.multiply( SolMarker.modelMat );	
+	MVPMat.setIdentity( );
+	MVPMat.multiply( ProjMat );
+	MVPMat.multiply( ViewMat );
+	MVPMat.multiply( SolMarker.modelMat );	
 
-		SolMarker.mvpMat.setIdentity( );
-		SolMarker.mvpMat.multiply( ProjMat );
-		SolMarker.mvpMat.multiply( ViewMat );
-		SolMarker.mvpMat.multiply( SolMarker.modelMat );
-		
-		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
-
-		try { 
-			gl.useProgram( shaderPlanets );
-		}catch(err){
-			alert( err );
-			console.error( err.description );
-		}
-		
-		gl.uniformMatrix4fv( shaderPlanets.uModelMat, false, MVPMat.elements );
+	SolMarker.mvpMat.setIdentity( );
+	SolMarker.mvpMat.multiply( ProjMat );
+	SolMarker.mvpMat.multiply( ViewMat );
+	SolMarker.mvpMat.multiply( SolMarker.modelMat );
 	
-		color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
-		gl.uniform3fv(shaderPlanets.uColor, color);
-	
+	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
 
-		for(var o = 0; o < model.length; o++) { 
-			draw(model[o], shaderPlanets, gl.TRIANGLES);
-		}
+	try { 
+		gl.useProgram( shaderPlanets );
+	}catch(err){
+		alert( err );
+		console.error( err.description );
+	}
+	
+	gl.uniformMatrix4fv( shaderPlanets.uModelMat, false, MVPMat.elements );
+
+	color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
+	gl.uniform3fv(shaderPlanets.uColor, color);
+
+
+	for(var o = 0; o < model.length; o++) { 
+		draw(model[o], shaderPlanets, gl.TRIANGLES);
+	}
 }
 
 function drawTerra( axisEnabled ){
@@ -501,46 +581,45 @@ function drawTerra( axisEnabled ){
 }
 
 function drawSiriusStar( axisEnabled ){
+	SiriusStar.scaleMat.setIdentity();
+	SiriusStar.scaleMat.scale( modelSize, modelSize, modelSize );
 
-		SiriusStar.scaleMat.setIdentity();
-		SiriusStar.scaleMat.scale( modelSize, modelSize, modelSize );
-
-		SiriusStar.transMat.setIdentity( );
-		SiriusStar.transMat.translate( 180, 120, -1000 );
-		
-		SiriusStar.modelMat.setIdentity();
-		SiriusStar.modelMat.multiply(SiriusStar.transMat);
-		SiriusStar.modelMat.multiply(SiriusStar.rotMat);
-		SiriusStar.modelMat.multiply(SiriusStar.scaleMat);
-
-		SiriusStar.mvpMat.setIdentity( );
-		SiriusStar.mvpMat.multiply( ProjMat );
-		SiriusStar.mvpMat.multiply( ViewMat );
-		SiriusStar.mvpMat.multiply( SiriusStar.modelMat );
-
-		MVPMat.setIdentity();
-		MVPMat.multiply(ProjMat);
-		MVPMat.multiply(ViewMat);
-		MVPMat.multiply(SiriusStar.modelMat);	
-		
-		if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
-
-		try { 
-			gl.useProgram(shaderPlanets);
-		}catch(err){
-			alert(err);
-			console.error(err.description);
-		}
-		
-		gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
+	SiriusStar.transMat.setIdentity( );
+	SiriusStar.transMat.translate( 180, 120, -1000 );
 	
-		color[0] = 0.8; color[1] = 0.8; color[2] = 1.0;
-		gl.uniform3fv(shaderPlanets.uColor, color);
-	
+	SiriusStar.modelMat.setIdentity();
+	SiriusStar.modelMat.multiply(SiriusStar.transMat);
+	SiriusStar.modelMat.multiply(SiriusStar.rotMat);
+	SiriusStar.modelMat.multiply(SiriusStar.scaleMat);
 
-		for(var o = 0; o < model.length; o++) { 
-			draw(model[o], shaderPlanets, gl.TRIANGLES);
-		}
+	SiriusStar.mvpMat.setIdentity( );
+	SiriusStar.mvpMat.multiply( ProjMat );
+	SiriusStar.mvpMat.multiply( ViewMat );
+	SiriusStar.mvpMat.multiply( SiriusStar.modelMat );
+
+	MVPMat.setIdentity();
+	MVPMat.multiply(ProjMat);
+	MVPMat.multiply(ViewMat);
+	MVPMat.multiply(SiriusStar.modelMat);	
+	
+	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
+
+	try { 
+		gl.useProgram(shaderPlanets);
+	}catch(err){
+		alert(err);
+		console.error(err.description);
+	}
+	
+	gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
+
+	color[0] = 0.8; color[1] = 0.8; color[2] = 1.0;
+	gl.uniform3fv(shaderPlanets.uColor, color);
+
+
+	for(var o = 0; o < model.length; o++) { 
+		draw(model[o], shaderPlanets, gl.TRIANGLES);
+	}
 }
 
 // Basically, vertex attrib 0 has to be enabled or else OpenGL 
@@ -556,3 +635,113 @@ function workaroundFixBindAttribZeroProblem(){
                 console.log( err.description );
         }
 }
+
+
+function initCubeVertexBuffers(gl) {
+	// Create a cube
+	//    v6----- v5
+	//   /|      /|
+	//  v1------v0|
+	//  | |     | |
+	//  | |v7---|-|v4
+	//  |/      |/
+	//  v2------v3
+
+	var vertices = new Float32Array([   // Vertex coordinates
+	   1.0, 1.0, 1.0,  -1.0, 1.0, 1.0,  -1.0,-1.0, 1.0,   1.0,-1.0, 1.0,    // v0-v1-v2-v3 front
+	   1.0, 1.0, 1.0,   1.0,-1.0, 1.0,   1.0,-1.0,-1.0,   1.0, 1.0,-1.0,    // v0-v3-v4-v5 right
+	   1.0, 1.0, 1.0,   1.0, 1.0,-1.0,  -1.0, 1.0,-1.0,  -1.0, 1.0, 1.0,    // v0-v5-v6-v1 up
+	  -1.0, 1.0, 1.0,  -1.0, 1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0,-1.0, 1.0,    // v1-v6-v7-v2 left
+	  -1.0,-1.0,-1.0,   1.0,-1.0,-1.0,   1.0,-1.0, 1.0,  -1.0,-1.0, 1.0,    // v7-v4-v3-v2 down
+	   1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  -1.0, 1.0,-1.0,   1.0, 1.0,-1.0     // v4-v7-v6-v5 back
+	]);
+
+	var normals = new Float32Array([   // Normal
+	   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,   0.0, 0.0, 1.0,     // v0-v1-v2-v3 front
+	   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,   1.0, 0.0, 0.0,     // v0-v3-v4-v5 right
+	   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,   0.0, 1.0, 0.0,     // v0-v5-v6-v1 up
+	  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,  -1.0, 0.0, 0.0,     // v1-v6-v7-v2 left
+	   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,   0.0,-1.0, 0.0,     // v7-v4-v3-v2 down
+	   0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0,   0.0, 0.0,-1.0      // v4-v7-v6-v5 back
+	]);
+
+	var texCoords = new Float32Array([   // Texture coordinates
+	   1.0, 1.0,   0.0, 1.0,   0.0, 0.0,   1.0, 0.0,    // v0-v1-v2-v3 front
+	   0.0, 1.0,   0.0, 0.0,   1.0, 0.0,   1.0, 1.0,    // v0-v3-v4-v5 right
+	   1.0, 0.0,   1.0, 1.0,   0.0, 1.0,   0.0, 0.0,    // v0-v5-v6-v1 up
+	   1.0, 1.0,   0.0, 1.0,   0.0, 0.0,   1.0, 0.0,    // v1-v6-v7-v2 left
+	   0.0, 0.0,   1.0, 0.0,   1.0, 1.0,   0.0, 1.0,    // v7-v4-v3-v2 down
+	   0.0, 0.0,   1.0, 0.0,   1.0, 1.0,   0.0, 1.0     // v4-v7-v6-v5 back
+	]);
+
+	var indices = new Uint8Array([        // Indices of the vertices
+	   0, 1, 2,   0, 2, 3,    // front
+	   4, 5, 6,   4, 6, 7,    // right
+	   8, 9,10,   8,10,11,    // up
+	  12,13,14,  12,14,15,    // left
+	  16,17,18,  16,18,19,    // down
+	  20,21,22,  20,22,23     // back
+	]);
+
+	// Write vertex information to buffer object
+	CubeMarker.vertexBuffer = initArrayBufferForLaterUse(gl, vertices, 3, gl.FLOAT);
+	CubeMarker.normalBuffer = initArrayBufferForLaterUse(gl, normals, 3, gl.FLOAT);
+	CubeMarker.indexBuffer = initElementArrayBufferForLaterUse(gl, indices, gl.UNSIGNED_BYTE);
+	if (!CubeMarker.vertexBuffer || !CubeMarker.normalBuffer || !CubeMarker.indexBuffer){
+		CubeMarker = null;
+	}
+
+	CubeMarker.numIndices = indices.length;
+
+	// Unbind the buffer object
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+	if( !CubeMarker ){	
+		console.log("Failed to set the vertex information...!");
+		return;
+	}
+
+}
+
+function drawSolidCube( gl, program ) {
+  gl.useProgram(program);   // Tell that this program object is used
+
+  // Assign the buffer objects and enable the assignment
+  initAttributeVariable(gl, program.a_Position, CubeMarker.vertexBuffer); // Vertex coordinates
+  initAttributeVariable(gl, program.a_Normal, CubeMarker.normalBuffer);   // Normal
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, CubeMarker.indexBuffer);  // Bind indices
+
+  drawCube( gl, program );   // Draw
+}
+
+function drawCube( gl, program ) {
+	if( !CubeMarker.found ) return;
+
+	CubeMarker.rotMat.rotate(CubeMarker.angle, 0.0, 1.0, 0.0);
+	CubeMarker.modelMat.setIdentity();
+	CubeMarker.modelMat.multiply(CubeMarker.transMat);
+	CubeMarker.modelMat.multiply(CubeMarker.rotMat);
+	CubeMarker.modelMat.multiply(CubeMarker.scaleMat);
+
+	MVPMat.setIdentity( );
+	MVPMat.multiply( ProjMat );
+	MVPMat.multiply( ViewMat );
+	MVPMat.multiply( CubeMarker.modelMat );	
+
+	CubeMarker.mvpMat.setIdentity( );
+	CubeMarker.mvpMat.multiply( ProjMat );
+	CubeMarker.mvpMat.multiply( ViewMat );
+	CubeMarker.mvpMat.multiply( CubeMarker.modelMat );
+
+	// Calculate transformation matrix for normals and pass it to u_NormalMatrix
+	CubeMarker.normalMat.setInverseOf( CubeMarker.modelMat );
+	CubeMarker.normalMat.transpose( );
+	gl.uniformMatrix4fv(program.u_NormalMatrix, false, CubeMarker.normalMat.elements);
+
+	gl.uniformMatrix4fv(program.u_MvpMatrix, false, CubeMarker.mvpMat.elements);
+
+	gl.drawElements(gl.TRIANGLES, CubeMarker.numIndices, CubeMarker.indexBuffer.type, 0);   // Draw
+}
+
+

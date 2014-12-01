@@ -4,6 +4,33 @@
 <title>MATA65 - Computação Gráfica</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+	<script id="solid-vs" type="x-shader/x-vertex">
+		attribute vec4 a_Position;
+		attribute vec4 a_Normal;
+		uniform mat4 u_MvpMatrix;
+		uniform mat4 u_NormalMatrix;
+		varying vec4 v_Color;
+		void main() {
+			vec3 lightDirection = vec3(0.0, 0.0, 1.0); // Light direction(World coordinate)
+			vec4 color = vec4(0.0, 1.0, 1.0, 1.0);     // Face color
+			gl_Position = u_MvpMatrix * a_Position;
+			vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
+			float nDotL = max(dot(normal, lightDirection), 0.0);
+			v_Color = vec4(color.rgb * nDotL, color.a);
+		}
+
+	</script>
+
+	<script id="solid-fs" type="x-shader/x-fragment">
+		#ifdef GL_ES
+		precision mediump float;
+		#endif
+		varying vec4 v_Color;
+		void main() {
+			gl_FragColor = v_Color;
+		}
+	</script>
+
 	<script id="baseImage-vs" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
 		attribute vec2 aVertexTexture;
@@ -113,7 +140,6 @@
 		uniform vec4 uMatDif;
 		uniform vec4 uMatSpec;
 		uniform float uExpSpec;
-		
 
 		vec4 phong( vec3 light ){
 		
@@ -146,11 +172,11 @@
 		}	
 	</script>
 
-<script type="text/javascript" src="../lib/webgl-utils.js"></script>
-<script type="text/javascript" src="../lib/cuon-matrix.js"></script>
-<script type="text/javascript" src="../lib/shaders.js"></script>
-<script type="text/javascript" src="../lib/myOBJParser.js"></script>
-<script type="text/javascript" src="../lib/materialParser.js"></script>
+<script type="text/javascript" src="lib/webgl-utils.js"></script>
+<script type="text/javascript" src="lib/cuon-matrix.js"></script>
+<script type="text/javascript" src="lib/shaders.js"></script>
+<script type="text/javascript" src="lib/myOBJParser.js"></script>
+<script type="text/javascript" src="lib/materialParser.js"></script>
 <script type="text/javascript" src="ar-libs/svd.js"></script> 
 <script type="text/javascript" src="ar-libs/posit1.js"></script> 
 <script type="text/javascript" src="ar-libs/cv.js"></script> 
