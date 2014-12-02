@@ -168,7 +168,7 @@ function onReadOBJFile(fileString, fileName, gl, scale, reverse) {
 
 function onReadComplete(gl) {
 	
-var groupModel = null;
+	var groupModel = null;
 
 	g_drawingInfo 	= g_objDoc.getDrawingInfo();
 	
@@ -176,35 +176,22 @@ var groupModel = null;
 		
 		groupModel = new Object();
 
-		groupModel.vertexBuffer = gl.createBuffer();
-		if (groupModel.vertexBuffer) {		
-			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.vertexBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.vertices[o], gl.STATIC_DRAW);
-			}
-		else
-			alert("ERROR: can not create vertexBuffer");
-	
+		groupModel.vertexBuffer = initArrayBufferForLaterUse(gl, g_drawingInfo.vertices[o], 3, gl.FLOAT);
+
 		groupModel.colorBuffer = null;
 
-		groupModel.indexBuffer = gl.createBuffer();
-		if (groupModel.indexBuffer) {		
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, groupModel.indexBuffer);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g_drawingInfo.indices[o], gl.STATIC_DRAW);
-			}
-		else
-			alert("ERROR: can not create indexBuffer");
+		groupModel.indexBuffer = initElementArrayBufferForLaterUse(gl, g_drawingInfo.indices[o], gl.UNSIGNED_BYTE);
 		
-		groupModel.normalBuffer = gl.createBuffer( );
-		if( groupModel.normalBuffer ){
-			gl.bindBuffer( gl.ARRAY_BUFFER, groupModel.normalBuffer );
-			gl.bufferData( gl.ARRAY_BUFFER, g_drawingInfo.normals[o], gl.STATIC_DRAW );
-		}else{
-			alert( "ERROR: Can't create normal buffer " );
-		}
+		groupModel.normalBuffer = initArrayBufferForLaterUse(gl, g_drawingInfo.normals[o], 3, gl.FLOAT);
 
 		groupModel.numObjects = g_drawingInfo.indices[o].length;
+
 		model.push(groupModel);
-		}
+
+		// Unbind the buffer object
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	}
 }
 
 
@@ -412,4 +399,75 @@ function initAttributeVariable(gl, a_attribute, buffer) {
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.vertexAttribPointer(a_attribute, buffer.num, buffer.type, false, 0, 0);
   gl.enableVertexAttribArray(a_attribute);
+}
+
+
+function initSolidShader( ){
+	var solidVShader = getScriptContent( "solid-vs" );
+	var solidFShader = getScriptContent( "solid-fs" );
+
+
+	// Initialize shaders
+	shaderSolid = createProgram(gl, solidVShader, solidFShader );   
+
+	if ( !shaderSolid ) {
+		console.log('Failed to intialize shaders.');
+		return;
+	}
+
+	// Get storage locations of attribute and uniform variables in program object for single color drawing
+	shaderSolid.a_Position = gl.getAttribLocation(shaderSolid, 'a_Position');
+	shaderSolid.a_Normal = gl.getAttribLocation(shaderSolid, 'a_Normal');
+	shaderSolid.u_MvpMatrix = gl.getUniformLocation(shaderSolid, 'u_MvpMatrix');
+	shaderSolid.u_NormalMatrix = gl.getUniformLocation(shaderSolid, 'u_NormalMatrix');
+
+	if (shaderSolid.a_Position < 0 || shaderSolid.a_Normal < 0 || 
+		!shaderSolid.u_MvpMatrix || !shaderSolid.u_NormalMatrix ) { 
+		console.log('Failed to get the storage location of attribute or uniform variable'); 
+		return;
+	}
+
+}
+
+function initTerraShader( ){
+	var terraVShader = getScriptContent( "terra-vs" );
+	var terraFShader = getScriptContent( "terra-fs" );
+
+
+	// Initialize shaders
+	shaderTerra = createProgram(gl, terraVShader, terraFShader );   
+
+	if ( !shaderTerra ) {
+		console.log('Failed to intialize shaders.');
+		return;
+	}
+
+	// Get storage locations of attribute and uniform variables in program object for single color drawing
+	shaderTerra.vPositionAttr 	= gl.getAttribLocation( shaderTerra, "aVertexPosition" );
+	shaderTerra.aVNorm		= gl.getAttribLocation( shaderTerra, "aVNorm" );
+
+	shaderTerra.uModelMat		= gl.getUniformLocation( shaderTerra, "uModelMat" );
+	shaderTerra.uViewMat		= gl.getUniformLocation( shaderTerra, "uViewMat" );
+	shaderTerra.uProjMat		= gl.getUniformLocation( shaderTerra, "uProjMat" );
+	shaderTerra.uNormMat		= gl.getUniformLocation( shaderTerra, "uNormMat" );
+
+	shaderTerra.uCamPos		= gl.getUniformLocation( shaderTerra, "uCamPos" );
+	shaderTerra.uLPos		= gl.getUniformLocation( shaderTerra, "uLPos" );
+	shaderTerra.uSiriusPos		= gl.getUniformLocation( shaderTerra, "uSiriusPos" );
+	shaderTerra.uLColor		= gl.getUniformLocation( shaderTerra, "uLColor" );
+	shaderTerra.uMatAmb		= gl.getUniformLocation( shaderTerra, "uMatAmb" );
+	shaderTerra.uMatDif		= gl.getUniformLocation( shaderTerra, "uMatDif" );
+	shaderTerra.uMatSpec		= gl.getUniformLocation( shaderTerra, "uMatSpec" );
+	shaderTerra.uExpSpec		= gl.getUniformLocation( shaderTerra, "uExpSpec" );
+
+	if( shaderTerra.aVertexPosition < 0 || shaderTerra.aVNorm < 0 ){
+		alert( "ERROR: getAttribLocation shaderTerra" );
+	}
+	if( !shaderTerra.uModelMat || !shaderTerra.uProjMat || !shaderTerra.uNormMat
+		|| !shaderTerra.uCamPos   
+		|| !shaderTerra.uLColor  || !shaderTerra.uMatSpec 
+		|| !shaderTerra.uMatAmb  || !shaderTerra.uMatDif
+		|| !shaderTerra.uExpSpec ){
+		alert( "ERROR: getUniformLocation shaderTerra" );
+	}
 }
