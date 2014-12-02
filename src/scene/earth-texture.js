@@ -90,10 +90,23 @@ function drawEarthTex( gl, program ) {
 	lightColor.elements[2] = 1.0;
 	lightColor.elements[3] = 1.0;
 			
+	var lightPosV4 		= new Vector3( );
+	lightPosV4.elements[0]	= 0.0;
+	lightPosV4.elements[1]	= cameraPos.elements[1];
+	lightPosV4.elements[2]	= cameraPos.elements[2];
+	lightPosV4.elements[3]	= 1.0;
+
+	
+	
 	var lightPos 		= new Vector3( );
 	lightPos.elements[0]	= 0.0;
 	lightPos.elements[1]	= cameraPos.elements[1];
 	lightPos.elements[2]	= cameraPos.elements[2];
+
+	//MVPMat.setIdentity( );
+	//MVPMat.multiply( ProjMat );
+	//MVPMat.multiply( ViewMat );
+	//lightPos = MVPMat.multiplyVector3( lightPos );
 
 	gl.uniformMatrix4fv(program.uModelMat, false, EarthTexMarker.modelMat.elements);
 	gl.uniformMatrix4fv(program.uViewMat, false, ViewMat.elements);
