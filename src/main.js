@@ -98,7 +98,7 @@ function main() {
 			
 	initializeShaderPlanets( );	
 
-	initTerraShader( );
+	//initTerraShader( );
 
 	initSolidShader( );
 
@@ -243,7 +243,7 @@ function drawScene(markers) {
 
 // Desenha a terra caso seu marcador tenha sido encontrado
 // IF TerraMarker.found = true
-	drawTerra( true );
+//	drawTerra( true );
 
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 	drawEarthTexShader( );
@@ -274,7 +274,7 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		updateSolMarker( markers[m].id, pose );
 		updateCube( markers[m].id, pose );
    		
-		updateTerraMarker( markers[m].id, pose );
+		//updateTerraMarker( markers[m].id, pose );
 		updateEarthTex( markers[m].id, pose );
 	}
 };

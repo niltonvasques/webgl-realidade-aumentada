@@ -29,6 +29,7 @@ function initGL(canvas) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	//gl.enable(gl.DEPTH_TEST);
+	// Necessário para a correta renderização do algoritmo de phong, com a iluminação
 	gl.enable(gl.CULL_FACE);
 	//gl.frontFace(gl.CCW);
 	return gl;
