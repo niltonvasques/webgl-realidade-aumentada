@@ -21,7 +21,7 @@ var shaderSolid 	= null;
 
 var axis 		= null;
 var baseTexture		= null;
-var sphereModel		= null;
+var sphereObj		= null;
 var earthObj		= null;
 var color 		= new Float32Array(3);
 var modelMat 		= new Matrix4();
@@ -115,15 +115,14 @@ function loadResources( ){
 	earthOBJLoad.readOBJFile("obj/earth.obj", gl, 1, true);
 	
 	var tick = function() {   // Start drawing
-		if ( sphereModel == null && sphereOBJLoad.g_objDoc != null && sphereOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
-			sphereModel = onSphereReadComplete( gl, sphereOBJLoad );
+		if ( sphereObj == null && sphereOBJLoad.g_objDoc != null && sphereOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
+			sphereObj = onSphereReadComplete( gl, sphereOBJLoad );
 		}
 		if ( earthObj == null && earthOBJLoad.g_objDoc != null && earthOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
 			earthObj = onEarthReadComplete( gl, earthOBJLoad );
 		}
 		
-		if ( earthObj != null && sphereModel != null && earthObj.model.length > 0 && sphereModel.length > 0) {
-		//if ( sphereModel != null && sphereModel.length > 0) {
+		if ( earthObj != null && sphereObj != null && earthObj.model.length > 0 && sphereObj.model.length > 0) {
 			console.log( "Resources loaded!!" );
 			configureCameraPosition( );	
 			rotMat.setIdentity();
@@ -208,11 +207,15 @@ function drawScene(markers) {
 	MVPMat.multiply(ViewMat);
 	MVPMat.multiply(modelMat);
 		
+// Desenha a imagem da câmera na tela
 	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
 
 // Verifica os marcadores encontrados
 // Atualiza as matrizes de localização, translação e rotação dos objetos encontrados	
 	updateScenes( markers );
+
+
+// Configura a matrix de projeção
 
 	ViewMat.setLookAt(	0.0, 0.0, 0.0,
     					0.0, 0.0, -1.0,
@@ -220,22 +223,21 @@ function drawScene(markers) {
     
 	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
+// Desenha uma estrela solitária na tela, sem a utilização dos marcadores
 	drawSiriusStar( true );
 
 // Desenha o sol caso seu marcador tenha sido encontrado
 // IF SolMarker.found = true
 	drawSol( true );
 
-	// Calculate the view projection matrix
-	var viewProjMatrix = new Matrix4();
-	viewProjMatrix.setPerspective(30.0, gl.viewportWidth / gl.viewportHeight, 1.0, 100.0);
-	viewProjMatrix.lookAt(0.0, 0.0, 15.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
+// Desenha um cubo girando na tela
 	drawSolidCube( gl, shaderSolid );
 
 // Desenha a terra caso seu marcador tenha sido encontrado
 // IF TerraMarker.found = true
 	drawTerra( true );
+
+	drawEarthTexShader( );
 }
 
 // ********************************************************
@@ -246,6 +248,7 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 	SolMarker.found 	= false;
 	TerraMarker.found 	= false;
 	CubeMarker.found 	= false;
+	EarthTexMarker.found 	= false;
 
 	for(var m = 0; m < markers.length; m++ ){
 
@@ -263,6 +266,7 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		updateCube( markers[m].id, pose );
    		
 		updateTerraMarker( markers[m].id, pose );
+		updateEarthTex( markers[m].id, pose );
 	}
 };
 
@@ -280,60 +284,6 @@ function configureCameraPosition( ){
 	cameraUp.elements[2] 	= 0.0;
 }
 
-function drawSiriusStar( axisEnabled ){
-	SiriusStar.scaleMat.setIdentity();
-	SiriusStar.scaleMat.scale( modelSize, modelSize, modelSize );
 
-	SiriusStar.transMat.setIdentity( );
-	SiriusStar.transMat.translate( 180, 120, -1000 );
-	
-	SiriusStar.modelMat.setIdentity();
-	SiriusStar.modelMat.multiply(SiriusStar.transMat);
-	SiriusStar.modelMat.multiply(SiriusStar.rotMat);
-	SiriusStar.modelMat.multiply(SiriusStar.scaleMat);
-
-	SiriusStar.mvpMat.setIdentity( );
-	SiriusStar.mvpMat.multiply( ProjMat );
-	SiriusStar.mvpMat.multiply( ViewMat );
-	SiriusStar.mvpMat.multiply( SiriusStar.modelMat );
-
-	MVPMat.setIdentity();
-	MVPMat.multiply(ProjMat);
-	MVPMat.multiply(ViewMat);
-	MVPMat.multiply(SiriusStar.modelMat);	
-	
-	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
-
-	try { 
-		gl.useProgram(shaderPlanets);
-	}catch(err){
-		alert(err);
-		console.error(err.description);
-	}
-	
-	gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
-
-	color[0] = 0.8; color[1] = 0.8; color[2] = 1.0;
-	gl.uniform3fv(shaderPlanets.uColor, color);
-
-
-	for(var o = 0; o < sphereModel.length; o++) { 
-		draw(sphereModel[o], shaderPlanets, gl.TRIANGLES);
-	}
-}
-
-// Basically, vertex attrib 0 has to be enabled or else OpenGL 
-// will not render where as OpenGL ES 2.0 will. 
-// https://www.khronos.org/webgl/public-mailing-list/archives/1005/msg00053.html
-function workaroundFixBindAttribZeroProblem(){
-	try{
-		gl.bindBuffer( gl.ARRAY_BUFFER, sphereModel[0].vertexBuffer );
-		gl.vertexAttribPointer( 0, 3, gl.FLOAT, false, 0, 0 );
-		gl.enableVertexAttribArray( 0 );
-        }catch( err ){
-                alert( err );
-                console.log( err.description );
-        }
-}
 
 

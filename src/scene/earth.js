@@ -157,3 +157,17 @@ function drawTerra( axisEnabled ){
 		draw( model[o], shaderTerra, gl.TRIANGLES );
 	}
 }
+
+// Basically, vertex attrib 0 has to be enabled or else OpenGL 
+// will not render where as OpenGL ES 2.0 will. 
+// https://www.khronos.org/webgl/public-mailing-list/archives/1005/msg00053.html
+function workaroundFixBindAttribZeroProblem(){
+	try{
+		gl.bindBuffer( gl.ARRAY_BUFFER, sphereObj.model[0].vertexBuffer );
+		gl.vertexAttribPointer( 0, 3, gl.FLOAT, false, 0, 0 );
+		gl.enableVertexAttribArray( 0 );
+        }catch( err ){
+                alert( err );
+                console.log( err.description );
+        }
+}

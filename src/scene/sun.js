@@ -3,7 +3,7 @@
 // Aqui ficará declarado todos os marcadores que iremos utilizar na aplicação.
 //
 var SolMarker 		= new Object();
-SolMarker.id		= 24;
+SolMarker.id		= 25;
 SolMarker.rotMat 	= new Matrix4( );
 SolMarker.transMat 	= new Matrix4( );
 SolMarker.scaleMat 	= new Matrix4( );
@@ -79,7 +79,7 @@ function drawSol( axisEnabled ){
 	gl.uniform3fv(shaderPlanets.uColor, color);
 
 
-	for(var o = 0; o < sphereModel.length; o++) { 
-		draw(sphereModel[o], shaderPlanets, gl.TRIANGLES);
+	for(var o = 0; o < sphereObj.model.length; o++) { 
+		draw(sphereObj.model[o], shaderPlanets, gl.TRIANGLES);
 	}
 }

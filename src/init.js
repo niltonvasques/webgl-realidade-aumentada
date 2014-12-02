@@ -168,8 +168,10 @@ function onSphereReadComplete(gl, objload) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}
+	var obj = new Object( );
+	obj.model = model;
 
-	return model;
+	return obj;
 }
 
 
@@ -178,6 +180,7 @@ function onEarthReadComplete( gl, objload ) {
 
 	var model = new Array( );
 	var material = new Array( );
+	var textures = new Array( );
 	
 	var groupModel = null;
 
@@ -231,6 +234,9 @@ function onEarthReadComplete( gl, objload ) {
 	
 	obj.material = material;
 	obj.model = model;
+	obj.textures = textures;
+
+	initEarthTextures( obj, g_drawingInfo );
 	
 	return obj;
 }
@@ -279,7 +285,7 @@ function initBaseImage() {
 	if (baseImage.vertexBuffer) {		
 		gl.bindBuffer(gl.ARRAY_BUFFER, baseImage.vertexBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vPos), gl.STATIC_DRAW);
-		}
+	}
 	else
 		alert("ERROR: can not create vertexBuffer");
 	
@@ -396,6 +402,47 @@ function initTexture() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	videoTexture.needsUpdate = false;
+}
+
+
+
+// ********************************************************
+// ********************************************************
+function initEarthTextures( obj, g_drawingInfo ) {
+	
+	for(var i = 0 ; i < g_drawingInfo.mtl.length ; i++) {
+		var m = g_drawingInfo.mtl[i];
+		for(var j = 0 ; j < m.materials.length ; j++) {
+			if (m.materials[j].mapKd != "") {
+				initTexture( obj, m.materials[j].mapKd);
+			}
+		}
+	}
+}
+
+// ********************************************************
+// ********************************************************
+function initEarthTexture( obj, filename) {
+	
+	var image = new Image();
+	
+	image.onload = function() {
+		
+		var t = gl.createTexture();
+		
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+		gl.bindTexture(gl.TEXTURE_2D, t);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		
+		obj.textures.push(t);
+		obj.textureOK++;
+	}
+	image.src = filename;
 }
 
 
