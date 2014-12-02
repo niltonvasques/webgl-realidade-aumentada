@@ -4,6 +4,7 @@
   ],
   "loadEagerly": [
     "lib/*.js",
+    "scene/*.js",
     "*.js"
   ],
   "plugins": {

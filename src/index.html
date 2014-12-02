@@ -4,6 +4,34 @@
 <title>MATA65 - Computação Gráfica</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+	<script id="solid-vs" type="x-shader/x-vertex">
+		attribute vec4 a_Position;
+		attribute vec4 a_Normal;
+		uniform mat4 u_MvpMatrix;
+		uniform mat4 u_NormalMatrix;
+		varying vec4 v_Color;
+		void main() {
+			vec3 lightDirection = vec3(0.0, 0.0, 1.0); // Light direction(World coordinate)
+			vec4 color = vec4(0.0, 1.0, 1.0, 1.0);     // Face color
+			//Flip x
+			gl_Position = u_MvpMatrix * a_Position;
+			vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
+			float nDotL = max(dot(normal, lightDirection), 0.0);
+			v_Color = vec4(color.rgb * nDotL, color.a);
+		}
+
+	</script>
+
+	<script id="solid-fs" type="x-shader/x-fragment">
+		#ifdef GL_ES
+		precision mediump float;
+		#endif
+		varying vec4 v_Color;
+		void main() {
+			gl_FragColor = v_Color;
+		}
+	</script>
+
 	<script id="baseImage-vs" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
 		attribute vec2 aVertexTexture;
@@ -13,7 +41,8 @@
 		varying vec4 vColor;
 		
 		void main(void) {
-			gl_Position = uMVPMat* vec4(aVertexPosition.xyz, 1.0);
+			vec3 flipped = vec3(aVertexPosition.x, aVertexPosition.y, aVertexPosition.z );
+			gl_Position = uMVPMat* vec4(flipped.xyz, 1.0);
 			vTextureCoord = aVertexTexture;
 			//vColor = vec4(uColor, 1.0);
 		}
@@ -123,7 +152,7 @@
 		vec4 phong( vec3 light ){
 		    vec4 texel = texture2D(uSampler0, vTextCoord);
 			vec4 ambient	= uLColor * uMatAmb;
-			vec3 vL 	= normalize( uLPos - vPosW );
+			vec3 vL 	= normalize( light - vPosW );
 			
 			float teta 	= max( dot( vL, vNormal ), 0.0 );
 			// Calculado a distância entre a luz e o vértice
@@ -151,22 +180,93 @@
 		}	
 	</script>
 
-<script type="text/javascript" src="../lib/webgl-utils.js"></script>
-<script type="text/javascript" src="../lib/cuon-matrix.js"></script>
-<script type="text/javascript" src="../lib/shaders.js"></script>
-<script type="text/javascript" src="../lib/myOBJParser.js"></script>
-<script type="text/javascript" src="../lib/materialParser.js"></script>
-<script type="text/javascript" src="ar-libs/svd.js"></script> 
-<script type="text/javascript" src="ar-libs/posit1.js"></script> 
-<script type="text/javascript" src="ar-libs/cv.js"></script> 
-<script type="text/javascript" src="ar-libs/aruco.js"></script> 
-<script type="text/javascript" src="init.js"></script>
-<script type="text/javascript" src="camera.js"></script>
-<script type="text/javascript" src="main.js"></script>
-<script type="text/javascript" src="objetos.js"></script>
-<script type="text/javascript" src="shader.js"></script>
-<script type="text/javascript" src="utils.js"></script>
-<script type="text/javascript" src="aruco.js"></script>
+	<script id="texture-vs" type="x-shader/x-vertex">
+		attribute vec3 aVPosition;
+		attribute vec3 aVNorm;
+		attribute vec2 aVTexCoord;
+		
+		uniform mat4 uModelMat;
+		uniform mat4 uViewMat;
+		uniform mat4 uProjMat;
+		uniform mat4 uNormMat;
+		
+		varying vec3 vNormal;
+		varying vec3 vPosW;	
+		varying vec2 vTextCoord;	
+			
+		void main(void) {
+			
+			gl_Position = uProjMat * uViewMat * uModelMat * vec4(aVPosition.xyz, 1.0);
+			
+			vPosW = (uModelMat * vec4(aVPosition, 1.0)).xyz;
+			vTextCoord = aVTexCoord;
+			
+			vNormal = normalize(vec3(uNormMat * vec4(aVNorm, 1.0)));
+		}
+
+	</script>
+
+	<script id="texture-fs" type="x-shader/x-fragment">
+		precision mediump float;
+			
+		varying vec3 vNormal;
+		varying vec3 vPosW;	
+		varying vec2 vTextCoord;	
+				
+		uniform sampler2D uSampler0;
+		
+		uniform vec3 uCamPos;
+		uniform vec3 uLPos;
+		uniform vec4 uLColor;
+		uniform vec4 uMatAmb;
+		uniform vec4 uMatDif;
+		uniform vec4 uMatSpec;
+		uniform float uExpSpec;
+		
+		void main(void) {
+			vec4 texel = texture2D(uSampler0, vTextCoord);
+			
+			vec4 ambient = vec4(uLColor.rgb * uMatAmb.rgb, uMatAmb.a);
+		
+			vec3 vL = normalize(uLPos - vPosW);
+			float teta = max(dot(vL, vNormal), 0.0);
+					
+			vec4 diffuse = vec4(uLColor.rgb * texel.rgb * teta, texel.a);	
+
+			vec3 vV = normalize(uCamPos - vPosW);
+			vec3 vR = normalize(reflect(-vL, vNormal));
+			float omega = max(dot(vV, vR), 0.0);
+			vec4 specular = vec4(uLColor.rgb * uMatSpec.rgb * pow(omega,uExpSpec), uMatSpec.a);	
+			
+			gl_FragColor = clamp(ambient + diffuse + specular, 0.0, 1.0);
+		}
+	</script>
+
+	<!-- LIBRARYS -->
+	<script type="text/javascript" src="lib/webgl-utils.js"></script>
+	<script type="text/javascript" src="lib/cuon-matrix.js"></script>
+	<script type="text/javascript" src="lib/shaders.js"></script>
+	<script type="text/javascript" src="lib/myOBJParser.js"></script>
+	<script type="text/javascript" src="lib/materialParser.js"></script>
+	<script type="text/javascript" src="ar-libs/svd.js"></script> 
+	<script type="text/javascript" src="ar-libs/posit1.js"></script> 
+	<script type="text/javascript" src="ar-libs/cv.js"></script> 
+	<script type="text/javascript" src="ar-libs/aruco.js"></script> 
+
+	<!-- LOGIC -->
+	<script type="text/javascript" src="scene/cube.js"></script>
+	<script type="text/javascript" src="scene/sun.js"></script>
+	<script type="text/javascript" src="scene/sirius.js"></script>
+	<script type="text/javascript" src="scene/earth.js"></script>
+	<script type="text/javascript" src="scene/earth-texture.js"></script>
+	<script type="text/javascript" src="init.js"></script>
+	<script type="text/javascript" src="camera.js"></script>
+	<script type="text/javascript" src="main.js"></script>
+	<script type="text/javascript" src="objetos.js"></script>
+	<script type="text/javascript" src="shader.js"></script>
+	<script type="text/javascript" src="utils.js"></script>
+	<script type="text/javascript" src="aruco.js"></script>
+
 
 </head>
 

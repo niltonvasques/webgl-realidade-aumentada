@@ -1,73 +1,4 @@
     
-// ********************************************************
-// ********************************************************
-// Analyze the material file
-function onReadMTLFile(fileString) {
-	
-	var curentMaterial;
-	
-	var lines = fileString.split('\n');  // Break up into lines and store them as array
-	lines.push(null);           // Append null
-	var index = 0;              // Initialize index of line
-	
-	// Parse line by line
-	var line;      // A string in the line to be parsed
-	var curentMaterialName = ""; // Material name
-	var sp = new StringParser();  // Create StringParser
-	
-	while ((line = lines[index++]) != null) {
-		sp.init(line);                  // init StringParser
-		var command = sp.getWord();     // Get command
-		if (command == null)	 
-			continue;  // check null command
-		
-		switch(command) {
-			case '#'		:	break;    // Skip comments
-				
-			case 'newmtl'	: 	curentMaterialName 	= mtl.parseNewmtl(sp); // Get name
-								currentMaterial 	= new Material(curentMaterialName);
-								mtl.materials.push(currentMaterial);
-								break; 
-								
-			case 'Kd'		:   if (curentMaterialName == "") {
-									break;
-									} 
-								var kd = mtl.parseRGBA(sp);
-								currentMaterial.setKd(kd);
-								break; 
-								
-			case 'Ks'		:   if (curentMaterialName == "") {
-									break;
-									} 
-								var ks = mtl.parseRGBA(sp);
-								currentMaterial.setKs(ks);
-								break; 
-								
-			case 'Ka'		:   if (curentMaterialName == "") {
-									break;
-									} 
-								var ka = mtl.parseRGBA(sp);
-								currentMaterial.setKa(ka);
-								break; 
-								
-			case 'Ns'		:   if (curentMaterialName == "") {
-									break;
-									} 
-								var ns = sp.getFloat();
-								currentMaterial.setNs(ns);
-								break; 
-								
-			case 'map_Kd'	:   if (curentMaterialName == "") {
-									break;
-									} // Go to the next line because of Error
-								var mk = sp.getWord();
-								currentMaterial.setMapKd(mk);
-								break; // Go to the next line
-			}
-		}
-	mtl.complete = true;
-	return mtl;
-}
     
 //------------------------------------------------------------------------------
 // MTLDoc Object
@@ -144,3 +75,72 @@ Material.prototype.setMapKd = function(m) {
   this.mapKd = m;         
 }
 
+// ********************************************************
+// ********************************************************
+// Analyze the material file
+function onReadMTLFile( mtl, fileString ) {
+	
+	var curentMaterial;
+	
+	var lines = fileString.split('\n');  // Break up into lines and store them as array
+	lines.push(null);           // Append null
+	var index = 0;              // Initialize index of line
+	
+	// Parse line by line
+	var line;      // A string in the line to be parsed
+	var curentMaterialName = ""; // Material name
+	var sp = new StringParser();  // Create StringParser
+	
+	while ((line = lines[index++]) != null) {
+		sp.init(line);                  // init StringParser
+		var command = sp.getWord();     // Get command
+		if (command == null)	 
+			continue;  // check null command
+		
+		switch(command) {
+			case '#'		:	break;    // Skip comments
+				
+			case 'newmtl'	: 	curentMaterialName 	= mtl.parseNewmtl(sp); // Get name
+								currentMaterial 	= new Material(curentMaterialName);
+								mtl.materials.push(currentMaterial);
+								break; 
+								
+			case 'Kd'		:   if (curentMaterialName == "") {
+									break;
+									} 
+								var kd = mtl.parseRGBA(sp);
+								currentMaterial.setKd(kd);
+								break; 
+								
+			case 'Ks'		:   if (curentMaterialName == "") {
+									break;
+									} 
+								var ks = mtl.parseRGBA(sp);
+								currentMaterial.setKs(ks);
+								break; 
+								
+			case 'Ka'		:   if (curentMaterialName == "") {
+									break;
+									} 
+								var ka = mtl.parseRGBA(sp);
+								currentMaterial.setKa(ka);
+								break; 
+								
+			case 'Ns'		:   if (curentMaterialName == "") {
+									break;
+									} 
+								var ns = sp.getFloat();
+								currentMaterial.setNs(ns);
+								break; 
+								
+			case 'map_Kd'	:   if (curentMaterialName == "") {
+									break;
+									} // Go to the next line because of Error
+								var mk = sp.getWord();
+								currentMaterial.setMapKd(mk);
+								break; // Go to the next line
+			}
+		}
+	mtl.complete = true;
+	return mtl;
+}

@@ -33,6 +33,7 @@ function drawTextQuad(o, shaderProgram, MVPMat) {
   		return;
 	}
    	
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	gl.drawArrays(gl.TRIANGLES, 0, o.numItems);
 }
 
@@ -68,7 +69,8 @@ function draw(o, shaderProgram, primitive) {
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
 
 	gl.drawElements(primitive, o.numObjects, gl.UNSIGNED_SHORT, 0);
-//	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 
