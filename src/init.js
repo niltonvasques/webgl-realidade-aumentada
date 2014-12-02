@@ -124,7 +124,9 @@ function initializeShaderTerra( ){
 	shaderTerra.uMatDif		= gl.getUniformLocation( shaderTerra, "uMatDif" );
 	shaderTerra.uMatSpec		= gl.getUniformLocation( shaderTerra, "uMatSpec" );
 	shaderTerra.uExpSpec		= gl.getUniformLocation( shaderTerra, "uExpSpec" );
-
+	shaderTerra.vTexCoordAttr 	= gl.getAttribLocation(shaderTerra, "aVTexCoord");
+	shaderTerra.uSampler 		= gl.getUniformLocation(shaderTerra, "uSampler");
+	
 	if( !shaderTerra ) {
 		alert( "Could not initialize shader Terra" );
 	}else{
@@ -201,6 +203,16 @@ var groupModel = null;
 		}else{
 			alert( "ERROR: Can't create normal buffer " );
 		}
+
+		
+		groupModel.texCoordBuffer = gl.createBuffer();
+		if (groupModel.texCoordBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.texCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.textCoords[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create texCoordBuffer");
+		
 
 		groupModel.numObjects = g_drawingInfo.indices[o].length;
 		model.push(groupModel);
@@ -371,3 +383,18 @@ function initTexture() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	videoTexture.needsUpdate = false;
 }
+
+function initTT()
+{
+	terraTextura = gl.createTexture();
+	terraTextura.image = new image();
+	terraTextura.image.onload = function()
+
+{
+	tratarTextura(terraTextura);
+}
+
+terratextura.image.src = "xadrez.gif";
+shaderTerra.samplerUniform = gl.getUniformLocation(shaderTerra, "uSampler");
+}
+

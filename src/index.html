@@ -86,7 +86,7 @@
 	<script id="terra-vs" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
 		attribute vec3 aVNorm;
-		
+		attribute vec2 aVTexCoord;
 		uniform mat4 uModelMat;
 		uniform mat4 uViewMat;
 		uniform mat4 uProjMat;
@@ -98,11 +98,16 @@
 			gl_Position 	= uProjMat * uViewMat * uModelMat * vec4( aVertexPosition.xyz, 1.0 );
 			vPosW 	= ( uModelMat * vec4( aVertexPosition, 1.0 ) ).xyz;
 			vNormal 	= normalize( vec3( uNormMat * vec4( aVNorm, 1.0 ) ) );
+			vTextCoord = aVTexCoord;
+
 		}	
 	</script>
 	<script id="terra-fs" type="x-shader/x-fragment">
 		precision mediump float;
-		
+
+		varying vec2 vTextCoord;		
+		uniform sampler2D uSampler0;
+	
 		varying vec3 vNormal;
 		varying vec3 vPosW;
 		uniform vec3 uCamPos;
@@ -114,11 +119,11 @@
 		uniform vec4 uMatSpec;
 		uniform float uExpSpec;
 		
-
+	
 		vec4 phong( vec3 light ){
-		
+		    vec4 texel = texture2D(uSampler0, vTextCoord);
 			vec4 ambient	= uLColor * uMatAmb;
-			vec3 vL 	= normalize( light - vPosW );
+			vec3 vL 	= normalize( uLPos - vPosW );
 			
 			float teta 	= max( dot( vL, vNormal ), 0.0 );
 			// Calculado a distância entre a luz e o vértice
