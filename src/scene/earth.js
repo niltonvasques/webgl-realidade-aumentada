@@ -1,6 +1,6 @@
 
 var TerraMarker 	= new Object();
-TerraMarker.id		= 1;
+TerraMarker.id		= 2;
 TerraMarker.normMat 	= new Matrix4( );
 TerraMarker.rotMat 	= new Matrix4( );
 TerraMarker.transMat 	= new Matrix4( );

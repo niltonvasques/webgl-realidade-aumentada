@@ -21,7 +21,8 @@ var shaderSolid 	= null;
 
 var axis 		= null;
 var baseTexture		= null;
-var model		= new Array;
+var sphereModel		= null;
+var earthObj		= null;
 var color 		= new Float32Array(3);
 var modelMat 		= new Matrix4();
 var ViewMat 		= new Matrix4();
@@ -31,9 +32,6 @@ var MVPMat 		= new Matrix4();
 var cameraPos 		= new Vector3();
 var cameraLook 		= new Vector3();
 var cameraUp 		= new Vector3();
-
-var g_objDoc 		= null;	// The information of OBJ file
-var g_drawingInfo 	= null;	// The information for drawing 3D model
 
 var SiriusStar 		= new Object();
 SiriusStar.rotMat 	= new Matrix4( );
@@ -85,18 +83,22 @@ function main() {
 		console.log('Failed to set the baseTexture vertex information');
 		return;
 	}
+
+// Initialize textures
 	initTexture();
 
+// Initialize shaders
 	initializeShaderAxis( );
 			
 	initializeShaderPlanets( );	
 
-	//initializeShaderTerra( );
-	
 	initTerraShader( );
 
 	initSolidShader( );
 
+	initTextureShader( );
+
+// Initialize buffers
 	initCubeVertexBuffers( gl );
 
 	// Loading resources, fica aguardando o carregamento dos materiais e objetos
@@ -106,22 +108,29 @@ function main() {
 }
 
 function loadResources( ){
-	readOBJFile("sphere.obj", gl, 1, true);
+	var sphereOBJLoad = new OBJLoad( );
+	sphereOBJLoad.readOBJFile("obj/sphere.obj", gl, 1, true);
 
+	var earthOBJLoad = new OBJLoad( );
+	earthOBJLoad.readOBJFile("obj/earth.obj", gl, 1, true);
+	
 	var tick = function() {   // Start drawing
-		if (g_objDoc != null && g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
-			
-			onReadComplete(gl);
-			
-			g_objDoc = null;
-			
-			configureCameraPosition( );	
+		if ( sphereModel == null && sphereOBJLoad.g_objDoc != null && sphereOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
+			sphereModel = onSphereReadComplete( gl, sphereOBJLoad );
 		}
-		if (model.length > 0) {
+		if ( earthObj == null && earthOBJLoad.g_objDoc != null && earthOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
+			earthObj = onEarthReadComplete( gl, earthOBJLoad );
+		}
+		
+		if ( earthObj != null && sphereModel != null && earthObj.model.length > 0 && sphereModel.length > 0) {
+		//if ( sphereModel != null && sphereModel.length > 0) {
+			console.log( "Resources loaded!!" );
+			configureCameraPosition( );	
 			rotMat.setIdentity();
 			transMat.setIdentity();
 			animate();
 		}else{
+			console.log( "Waiting resources to be loaded!!" );
 			detector 	= new AR.Detector();
 			posit 		= new POS.Posit(modelSize, canvas.width);
 			requestAnimationFrame(tick, canvas);
@@ -308,8 +317,8 @@ function drawSiriusStar( axisEnabled ){
 	gl.uniform3fv(shaderPlanets.uColor, color);
 
 
-	for(var o = 0; o < model.length; o++) { 
-		draw(model[o], shaderPlanets, gl.TRIANGLES);
+	for(var o = 0; o < sphereModel.length; o++) { 
+		draw(sphereModel[o], shaderPlanets, gl.TRIANGLES);
 	}
 }
 
@@ -318,7 +327,7 @@ function drawSiriusStar( axisEnabled ){
 // https://www.khronos.org/webgl/public-mailing-list/archives/1005/msg00053.html
 function workaroundFixBindAttribZeroProblem(){
 	try{
-		gl.bindBuffer( gl.ARRAY_BUFFER, model[0].vertexBuffer );
+		gl.bindBuffer( gl.ARRAY_BUFFER, sphereModel[0].vertexBuffer );
 		gl.vertexAttribPointer( 0, 3, gl.FLOAT, false, 0, 0 );
 		gl.enableVertexAttribArray( 0 );
         }catch( err ){

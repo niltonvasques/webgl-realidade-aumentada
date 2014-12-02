@@ -79,7 +79,7 @@ function drawSol( axisEnabled ){
 	gl.uniform3fv(shaderPlanets.uColor, color);
 
 
-	for(var o = 0; o < model.length; o++) { 
-		draw(model[o], shaderPlanets, gl.TRIANGLES);
+	for(var o = 0; o < sphereModel.length; o++) { 
+		draw(sphereModel[o], shaderPlanets, gl.TRIANGLES);
 	}
 }

@@ -141,36 +141,12 @@ function initializeShaderTerra( ){
 	}
 }
 
-function readOBJFile(fileName, gl, scale, reverse) {
-	var request = new XMLHttpRequest();
-	
-	request.onreadystatechange = function() {
-		if (request.readyState === 4 && request.status !== 404) 
-			onReadOBJFile(request.responseText, fileName, gl, scale, reverse);
-		}
-	request.open('GET', fileName, true); // Create a request to acquire the file
-	request.send();                      // Send the request
-}
 
-function onReadOBJFile(fileString, fileName, gl, scale, reverse) {
-	var objDoc = new OBJDoc(fileName);	// Create a OBJDoc object
-	var result = objDoc.parse(fileString, scale, reverse);	// Parse the file
-	
-	if (!result) {
-		g_objDoc 		= null; 
-		g_drawingInfo 	= null;
-		console.log("OBJ file parsing error.");
-		return;
-		}
-		
-	g_objDoc = objDoc;
-}
-
-function onReadComplete(gl) {
-	
+function onSphereReadComplete(gl, objload) {
+ 	var model = new Array();	
 	var groupModel = null;
 
-	g_drawingInfo 	= g_objDoc.getDrawingInfo();
+	g_drawingInfo 	= objload.g_objDoc.getDrawingInfo();
 	
 	for(var o = 0; o < g_drawingInfo.numObjects; o++) {
 		
@@ -192,9 +168,72 @@ function onReadComplete(gl) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}
+
+	return model;
 }
 
 
+function onEarthReadComplete( gl, objload ) {
+	var obj = new Object( );
+
+	var model = new Array( );
+	var material = new Array( );
+	
+	var groupModel = null;
+
+	g_drawingInfo 	= objload.g_objDoc.getDrawingInfo();
+	
+	for(var o = 0; o < g_drawingInfo.numObjects; o++) {
+		
+		groupModel = new Object();
+
+		groupModel.vertexBuffer = gl.createBuffer();
+		if (groupModel.vertexBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.vertexBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.vertices[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create vertexBuffer");
+	
+		groupModel.normalBuffer = gl.createBuffer();
+		if (groupModel.normalBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.normalBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.normals[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create normalBuffer");
+		
+		groupModel.texCoordBuffer = gl.createBuffer();
+		if (groupModel.texCoordBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.texCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.textCoords[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create texCoordBuffer");
+
+		groupModel.indexBuffer = gl.createBuffer();
+		if (groupModel.indexBuffer) {		
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, groupModel.indexBuffer);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g_drawingInfo.indices[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create indexBuffer");
+		
+		groupModel.numObjects 	= g_drawingInfo.indices[o].length;
+		groupModel.Material 	= g_drawingInfo.materials[o];
+		
+		model.push(groupModel);
+	}
+		
+  	for(var i = 0; i < g_drawingInfo.mtl.length; i++) 
+		for(var j = 0; j < g_drawingInfo.mtl[i].materials.length; j++) 
+			material.push(g_drawingInfo.mtl[i].materials[j]);
+	
+	obj.material = material;
+	obj.model = model;
+	
+	return obj;
+}
 
 // ********************************************************
 // ********************************************************
@@ -470,4 +509,57 @@ function initTerraShader( ){
 		|| !shaderTerra.uExpSpec ){
 		alert( "ERROR: getUniformLocation shaderTerra" );
 	}
+}
+
+function initTextureShader( ){
+	var textureVShader = getScriptContent( "texture-vs" );
+	var textureFShader = getScriptContent( "texture-fs" );
+
+
+	// Initialize shaders
+	shaderTexture = createProgram(gl, textureVShader, textureFShader );   
+
+	if ( !shaderTexture ) {
+		console.log('Failed to intialize shaders.');
+		return;
+	}
+
+	shaderTexture.vPositionAttr 	= gl.getAttribLocation(shaderTexture, "aVPosition");		
+	shaderTexture.vNormalAttr 		= gl.getAttribLocation(shaderTexture, "aVNorm");
+	shaderTexture.vTexCoordAttr 	= gl.getAttribLocation(shaderTexture, "aVTexCoord");
+	shaderTexture.uSampler 		= gl.getUniformLocation(shaderTexture, "uSampler");
+	shaderTexture.uModelMat 		= gl.getUniformLocation(shaderTexture, "uModelMat");
+	shaderTexture.uViewMat 		= gl.getUniformLocation(shaderTexture, "uViewMat");
+	shaderTexture.uProjMat 		= gl.getUniformLocation(shaderTexture, "uProjMat");
+	shaderTexture.uNormMat 		= gl.getUniformLocation(shaderTexture, "uNormMat");
+	
+	shaderTexture.uSampler	 		= gl.getUniformLocation(shaderTexture, "uSampler");	
+	
+	if (shaderTexture.vPositionAttr < 0 	|| 
+		shaderTexture.vColorAttr < 0 		|| 
+		shaderTexture.vTexCoordAttr < 0 	|| 
+		!shaderTexture.uModelMat 			|| 
+		!shaderTexture.uViewMat 			|| 
+		!shaderTexture.uProjMat 			|| 
+		!shaderTexture.uNormMat ) {
+		console.log("Error getAttribLocation shaderTexture"); 
+		return;
+		}
+		
+	shaderTexture.uCamPos 			= gl.getUniformLocation(shaderTexture, "uCamPos");
+	shaderTexture.uLightPos 		= gl.getUniformLocation(shaderTexture, "uLPos");
+	shaderTexture.uLightColor 		= gl.getUniformLocation(shaderTexture, "uLColor");
+	shaderTexture.uMatAmb 			= gl.getUniformLocation(shaderTexture, "uMatAmb");
+	shaderTexture.uMatDif 			= gl.getUniformLocation(shaderTexture, "uMatDif");
+	shaderTexture.uMatSpec			= gl.getUniformLocation(shaderTexture, "uMatSpec");
+	shaderTexture.uExpSpec			= gl.getUniformLocation(shaderTexture, "uExpSpec");
+	
+	if (shaderTexture.uCamPos < 0	 		|| shaderTexture.uLightPos < 0 	|| 
+		shaderTexture.uLightColor < 0		|| shaderTexture.uMatAmb < 0 		|| 
+		shaderTexture.uMatDif < 0			|| shaderTexture.uMatSpec < 0 		|| 
+		shaderTexture.uExpSpec < 0 ) {
+		console.log("Error getAttribLocation"); 
+		return;
+		}
+
 }

@@ -1,19 +1,19 @@
-var CubeMarker 		= new Object( );
-CubeMarker.id		= 1;
-CubeMarker.rotMat 		= new Matrix4( );
-CubeMarker.transMat 		= new Matrix4( );
-CubeMarker.scaleMat 		= new Matrix4( );
-CubeMarker.modelMat 		= new Matrix4( );
-CubeMarker.normalMat 		= new Matrix4( );
-CubeMarker.mvpMat 		= new Matrix4( );
-CubeMarker.lightColor		= new Vector4( );
-CubeMarker.angle 		= 0.0;
-CubeMarker.modelSize 		= 50.0;
+var EarthTexMarker 		= new Object( );
+EarthTexMarker.id		= 2;
+EarthTexMarker.rotMat 		= new Matrix4( );
+EarthTexMarker.transMat 		= new Matrix4( );
+EarthTexMarker.scaleMat 		= new Matrix4( );
+EarthTexMarker.modelMat 		= new Matrix4( );
+EarthTexMarker.normalMat 		= new Matrix4( );
+EarthTexMarker.mvpMat 		= new Matrix4( );
+EarthTexMarker.lightColor		= new Vector4( );
+EarthTexMarker.angle 		= 0.0;
+EarthTexMarker.modelSize 		= 50.0;
 
 var ANGLE_STEP = 30;   // The increments of rotation angle (degrees)
 var last = Date.now(); // Last time that this function was called
-function updateCube( markerId, pose ) {
-	if( markerId != CubeMarker.id ){
+function updateEarthTex( markerId, pose ) {
+	if( markerId != EarthTexMarker.id ){
 		return;
 	}
 
@@ -21,29 +21,29 @@ function updateCube( markerId, pose ) {
 	var elapsed = now - last;
 	last = now;
 	// Update the current rotation angle (adjusted by the elapsed time)
-	var newAngle = CubeMarker.angle + (ANGLE_STEP * elapsed) / 1000.0;
-	CubeMarker.angle = newAngle % 360;
+	var newAngle = EarthTexMarker.angle + (ANGLE_STEP * elapsed) / 1000.0;
+	EarthTexMarker.angle = newAngle % 360;
 
 
 	yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
 	pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
 	roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
 
-	CubeMarker.found = true;
+	EarthTexMarker.found = true;
 
-	CubeMarker.rotMat.setIdentity();
-	CubeMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
-	CubeMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
-	CubeMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
+	EarthTexMarker.rotMat.setIdentity();
+	EarthTexMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
+	EarthTexMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
+	EarthTexMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
 
-	CubeMarker.transMat.setIdentity();
-	CubeMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
+	EarthTexMarker.transMat.setIdentity();
+	EarthTexMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 
-	CubeMarker.scaleMat.setIdentity();
-	CubeMarker.scaleMat.scale( CubeMarker.modelSize, CubeMarker.modelSize, CubeMarker.modelSize );
+	EarthTexMarker.scaleMat.setIdentity();
+	EarthTexMarker.scaleMat.scale( EarthTexMarker.modelSize, EarthTexMarker.modelSize, EarthTexMarker.modelSize );
 }
 
-function initCubeVertexBuffers(gl) {
+function initEarthTexVertexBuffers(gl) {
 	// Create a cube
 	//    v6----- v5
 	//   /|      /|
@@ -90,64 +90,64 @@ function initCubeVertexBuffers(gl) {
 	]);
 
 	// Write vertex information to buffer object
-	CubeMarker.vertexBuffer = initArrayBufferForLaterUse(gl, vertices, 3, gl.FLOAT);
-	CubeMarker.normalBuffer = initArrayBufferForLaterUse(gl, normals, 3, gl.FLOAT);
-	CubeMarker.indexBuffer = initElementArrayBufferForLaterUse(gl, indices, gl.UNSIGNED_BYTE);
-	if (!CubeMarker.vertexBuffer || !CubeMarker.normalBuffer || !CubeMarker.indexBuffer){
-		CubeMarker = null;
+	EarthTexMarker.vertexBuffer = initArrayBufferForLaterUse(gl, vertices, 3, gl.FLOAT);
+	EarthTexMarker.normalBuffer = initArrayBufferForLaterUse(gl, normals, 3, gl.FLOAT);
+	EarthTexMarker.indexBuffer = initElementArrayBufferForLaterUse(gl, indices, gl.UNSIGNED_BYTE);
+	if (!EarthTexMarker.vertexBuffer || !EarthTexMarker.normalBuffer || !EarthTexMarker.indexBuffer){
+		EarthTexMarker = null;
 	}
 
-	CubeMarker.numIndices = indices.length;
+	EarthTexMarker.numIndices = indices.length;
 
 	// Unbind the buffer object
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-	if( !CubeMarker ){	
+	if( !EarthTexMarker ){	
 		console.log("Failed to set the vertex information...!");
 		return;
 	}
 
 }
 
-function drawSolidCube( gl, program ) {
+function drawEarthTexShader( gl, program ) {
   gl.useProgram(program);   // Tell that this program object is used
 
   // Assign the buffer objects and enable the assignment
-  initAttributeVariable(gl, program.a_Position, CubeMarker.vertexBuffer); // Vertex coordinates
-  initAttributeVariable(gl, program.a_Normal, CubeMarker.normalBuffer);   // Normal
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, CubeMarker.indexBuffer);  // Bind indices
+  initAttributeVariable(gl, program.a_Position, EarthTexMarker.vertexBuffer); // Vertex coordinates
+  initAttributeVariable(gl, program.a_Normal, EarthTexMarker.normalBuffer);   // Normal
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EarthTexMarker.indexBuffer);  // Bind indices
 
-  drawCube( gl, program );   // Draw
+  drawEarthTex( gl, program );   // Draw
 }
 
-function drawCube( gl, program ) {
-	if( !CubeMarker.found ) return;
+function drawEarthTex( gl, program ) {
+	if( !EarthTexMarker.found ) return;
 
-	CubeMarker.rotMat.rotate(CubeMarker.angle, 0.0, 1.0, 0.0);
-	CubeMarker.modelMat.setIdentity();
-	CubeMarker.modelMat.multiply(CubeMarker.transMat);
-	CubeMarker.modelMat.multiply(CubeMarker.rotMat);
-	CubeMarker.modelMat.multiply(CubeMarker.scaleMat);
+	EarthTexMarker.rotMat.rotate(EarthTexMarker.angle, 0.0, 1.0, 0.0);
+	EarthTexMarker.modelMat.setIdentity();
+	EarthTexMarker.modelMat.multiply(EarthTexMarker.transMat);
+	EarthTexMarker.modelMat.multiply(EarthTexMarker.rotMat);
+	EarthTexMarker.modelMat.multiply(EarthTexMarker.scaleMat);
 
 	MVPMat.setIdentity( );
 	MVPMat.multiply( ProjMat );
 	MVPMat.multiply( ViewMat );
-	MVPMat.multiply( CubeMarker.modelMat );	
+	MVPMat.multiply( EarthTexMarker.modelMat );	
 
-	CubeMarker.mvpMat.setIdentity( );
-	CubeMarker.mvpMat.multiply( ProjMat );
-	CubeMarker.mvpMat.multiply( ViewMat );
-	CubeMarker.mvpMat.multiply( CubeMarker.modelMat );
+	EarthTexMarker.mvpMat.setIdentity( );
+	EarthTexMarker.mvpMat.multiply( ProjMat );
+	EarthTexMarker.mvpMat.multiply( ViewMat );
+	EarthTexMarker.mvpMat.multiply( EarthTexMarker.modelMat );
 
 	// Calculate transformation matrix for normals and pass it to u_NormalMatrix
-	CubeMarker.normalMat.setInverseOf( CubeMarker.modelMat );
-	CubeMarker.normalMat.transpose( );
-	gl.uniformMatrix4fv(program.u_NormalMatrix, false, CubeMarker.normalMat.elements);
+	EarthTexMarker.normalMat.setInverseOf( EarthTexMarker.modelMat );
+	EarthTexMarker.normalMat.transpose( );
+	gl.uniformMatrix4fv(program.u_NormalMatrix, false, EarthTexMarker.normalMat.elements);
 
-	gl.uniformMatrix4fv(program.u_MvpMatrix, false, CubeMarker.mvpMat.elements);
+	gl.uniformMatrix4fv(program.u_MvpMatrix, false, EarthTexMarker.mvpMat.elements);
 
-	gl.drawElements(gl.TRIANGLES, CubeMarker.numIndices, CubeMarker.indexBuffer.type, 0);   // Draw
+	gl.drawElements(gl.TRIANGLES, EarthTexMarker.numIndices, EarthTexMarker.indexBuffer.type, 0);   // Draw
 }
 
 

@@ -224,7 +224,7 @@ var OBJDoc = function(fileName) {
 	this.numIndGrps		= 0;
 }
 
-var mtl;
+//var mtl;
     
 // ********************************************************
 // ********************************************************
@@ -258,12 +258,12 @@ var lines = fileString.split('\n');  // Break up into lines and store them as ar
 			case 'mtllib'	:   // Read Material chunk
 								var path = this.parseMtllib(sp, this.fileName);
 								var request = new XMLHttpRequest();
-								mtl = new MTLDoc();   // Create MTL instance
+								var mtl = new MTLDoc();   // Create MTL instance
 								this.mtlLib.push(mtl);
 								request.onreadystatechange = function() {
 								if (request.readyState == 4) {
 									if (request.status != 404) {
-										onReadMTLFile(request.responseText);
+											onReadMTLFile( mtl, request.responseText );
 										mtl.complete = true;
 										}
 									}
@@ -539,7 +539,7 @@ var strName = name.trim();
 OBJDoc.prototype.findMaterial = function(name) {
 
 	if (!this.isMTLComplete()) 
-		return;
+		return null;
 	
 	if (name == null) 
 		return null;
@@ -563,10 +563,10 @@ OBJDoc.prototype.findMaterial = function(name) {
 OBJDoc.prototype.findMaterialInd = function(name) {
 
 	if (!this.isMTLComplete()) 
-		return;
+		return -1;
 	
 	if (name == null) 
-		return null;
+		return -1;
 		
 	var strName = name.trim();
 	
@@ -575,9 +575,9 @@ OBJDoc.prototype.findMaterialInd = function(name) {
 			var strMatName = this.mtlLib[i].materials[j].name.trim();
 			if(strMatName == strName) {
 				return(j)
-				}
 			}
 		}
+	}
 	return (-1);
 }
 

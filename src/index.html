@@ -174,6 +174,67 @@
 		}	
 	</script>
 
+	<script id="texture-vs" type="x-shader/x-vertex">
+		attribute vec3 aVPosition;
+		attribute vec3 aVNorm;
+		attribute vec2 aVTexCoord;
+		
+		uniform mat4 uModelMat;
+		uniform mat4 uViewMat;
+		uniform mat4 uProjMat;
+		uniform mat4 uNormMat;
+		
+		varying vec3 vNormal;
+		varying vec3 vPosW;	
+		varying vec2 vTextCoord;	
+			
+		void main(void) {
+			
+			gl_Position = uProjMat * uViewMat * uModelMat * vec4(aVPosition.xyz, 1.0);
+			
+			vPosW = (uModelMat * vec4(aVPosition, 1.0)).xyz;
+			vTextCoord = aVTexCoord;
+			
+			vNormal = normalize(vec3(uNormMat * vec4(aVNorm, 1.0)));
+		}
+
+	</script>
+
+	<script id="texture-fs" type="x-shader/x-fragment">
+		precision mediump float;
+			
+		varying vec3 vNormal;
+		varying vec3 vPosW;	
+		varying vec2 vTextCoord;	
+				
+		uniform sampler2D uSampler0;
+		
+		uniform vec3 uCamPos;
+		uniform vec3 uLPos;
+		uniform vec4 uLColor;
+		uniform vec4 uMatAmb;
+		uniform vec4 uMatDif;
+		uniform vec4 uMatSpec;
+		uniform float uExpSpec;
+		
+		void main(void) {
+			vec4 texel = texture2D(uSampler0, vTextCoord);
+			
+			vec4 ambient = vec4(uLColor.rgb * uMatAmb.rgb, uMatAmb.a);
+		
+			vec3 vL = normalize(uLPos - vPosW);
+			float teta = max(dot(vL, vNormal), 0.0);
+					
+			vec4 diffuse = vec4(uLColor.rgb * texel.rgb * teta, texel.a);	
+
+			vec3 vV = normalize(uCamPos - vPosW);
+			vec3 vR = normalize(reflect(-vL, vNormal));
+			float omega = max(dot(vV, vR), 0.0);
+			vec4 specular = vec4(uLColor.rgb * uMatSpec.rgb * pow(omega,uExpSpec), uMatSpec.a);	
+			
+			gl_FragColor = clamp(ambient + diffuse + specular, 0.0, 1.0);
+		}
+	</script>
 <script type="text/javascript" src="lib/webgl-utils.js"></script>
 <script type="text/javascript" src="lib/cuon-matrix.js"></script>
 <script type="text/javascript" src="lib/shaders.js"></script>
@@ -186,6 +247,7 @@
 <script type="text/javascript" src="scene/cube.js"></script>
 <script type="text/javascript" src="scene/sun.js"></script>
 <script type="text/javascript" src="scene/earth.js"></script>
+<script type="text/javascript" src="scene/earth-texture.js"></script>
 <script type="text/javascript" src="init.js"></script>
 <script type="text/javascript" src="camera.js"></script>
 <script type="text/javascript" src="main.js"></script>
