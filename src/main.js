@@ -33,15 +33,6 @@ var cameraPos 		= new Vector3();
 var cameraLook 		= new Vector3();
 var cameraUp 		= new Vector3();
 
-var SiriusStar 		= new Object();
-SiriusStar.rotMat 	= new Matrix4( );
-SiriusStar.transMat 	= new Matrix4( );
-SiriusStar.scaleMat 	= new Matrix4( );
-SiriusStar.modelMat 	= new Matrix4( );
-SiriusStar.mvpMat 	= new Matrix4( );
-SiriusStar.lightColor	= new Vector4( );
-
-
 var video, 
 	videoImage, 
 	videoImageContext, 
@@ -90,7 +81,7 @@ function main() {
 		return;
 	}
 
-// Initialize textures
+// Initialize camera textures
 	initTexture();
 
 // Initialize shaders
@@ -250,6 +241,8 @@ function drawScene(markers) {
 }
 
 // ********************************************************
+// Função responsável por verificar os marcadores detecados e passar 
+// as coordenadas deste para os objetos a serem renderizados.
 // ********************************************************
 function updateScenes(markers){ //As modificações foram feitas aqui!!
 	var corners, corner, pose, i;

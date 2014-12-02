@@ -1,4 +1,13 @@
 
+var SiriusStar 		= new Object();
+SiriusStar.rotMat 	= new Matrix4( );
+SiriusStar.transMat 	= new Matrix4( );
+SiriusStar.scaleMat 	= new Matrix4( );
+SiriusStar.modelMat 	= new Matrix4( );
+SiriusStar.mvpMat 	= new Matrix4( );
+SiriusStar.lightColor	= new Vector4( );
+
+
 function drawSiriusStar( axisEnabled ){
 	SiriusStar.scaleMat.setIdentity();
 	SiriusStar.scaleMat.scale( modelSize, modelSize, modelSize );
