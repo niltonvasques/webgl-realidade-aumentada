@@ -207,7 +207,9 @@ function drawScene(markers) {
 	MVPMat.multiply(ViewMat);
 	MVPMat.multiply(modelMat);
 		
+
 // Desenha a imagem da câmera na tela
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
 
 // Verifica os marcadores encontrados
@@ -237,6 +239,7 @@ function drawScene(markers) {
 // IF TerraMarker.found = true
 	drawTerra( true );
 
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 	drawEarthTexShader( );
 }
 

@@ -235,12 +235,51 @@ function onEarthReadComplete( gl, objload ) {
 	obj.material = material;
 	obj.model = model;
 	obj.textures = textures;
+	obj.textureOK = 0;
 
 	initEarthTextures( obj, g_drawingInfo );
 	
 	return obj;
 }
 
+// ********************************************************
+// ********************************************************
+function initEarthTextures( obj, g_drawingInfo ) {
+	
+	for(var i = 0 ; i < g_drawingInfo.mtl.length ; i++) {
+		var m = g_drawingInfo.mtl[i];
+		for(var j = 0 ; j < m.materials.length ; j++) {
+			if (m.materials[j].mapKd != "") {
+				initEarthTexture( obj, m.materials[j].mapKd);
+			}
+		}
+	}
+}
+
+// ********************************************************
+// ********************************************************
+function initEarthTexture( obj, filename) {
+	
+	var image = new Image();
+	
+	image.onload = function() {
+		
+		var t = gl.createTexture();
+		
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+		gl.bindTexture(gl.TEXTURE_2D, t);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		
+		obj.textures.push(t);
+		obj.textureOK++;
+	}
+	image.src = filename;
+}
 // ********************************************************
 // ********************************************************
 function initBaseImage() {
@@ -406,44 +445,6 @@ function initTexture() {
 
 
 
-// ********************************************************
-// ********************************************************
-function initEarthTextures( obj, g_drawingInfo ) {
-	
-	for(var i = 0 ; i < g_drawingInfo.mtl.length ; i++) {
-		var m = g_drawingInfo.mtl[i];
-		for(var j = 0 ; j < m.materials.length ; j++) {
-			if (m.materials[j].mapKd != "") {
-				initTexture( obj, m.materials[j].mapKd);
-			}
-		}
-	}
-}
-
-// ********************************************************
-// ********************************************************
-function initEarthTexture( obj, filename) {
-	
-	var image = new Image();
-	
-	image.onload = function() {
-		
-		var t = gl.createTexture();
-		
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-		gl.bindTexture(gl.TEXTURE_2D, t);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-		
-		obj.textures.push(t);
-		obj.textureOK++;
-	}
-	image.src = filename;
-}
 
 
 function initArrayBufferForLaterUse(gl, data, num, type) {
