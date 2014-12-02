@@ -9,20 +9,20 @@ EarthTexMarker.mvpMat 		= new Matrix4( );
 EarthTexMarker.lightColor	= new Vector4( );
 EarthTexMarker.angle 		= 0.0;
 EarthTexMarker.modelSize 	= 50.0;
+EarthTexMarker.ANGLE_STEP	= 30.0;
+EarthTexMarker.last		= Date.now( );
 
-//var ANGLE_STEP = 30;   // The increments of rotation angle (degrees)
-//var last = Date.now(); // Last time that this function was called
 function updateEarthTex( markerId, pose ) {
 	if( markerId != EarthTexMarker.id ){
 		return;
 	}
 
-	//var now = Date.now();   // Calculate the elapsed time
-	//var elapsed = now - last;
-	//last = now;
-	//// Update the current rotation angle (adjusted by the elapsed time)
-	//var newAngle = EarthTexMarker.angle + (ANGLE_STEP * elapsed) / 1000.0;
-	//EarthTexMarker.angle = newAngle % 360;
+	var now = Date.now();   // Calculate the elapsed time
+	var elapsed = now - EarthTexMarker.last;
+	EarthTexMarker.last = now;
+	// Update the current rotation angle (adjusted by the elapsed time)
+	var newAngle = EarthTexMarker.angle + (EarthTexMarker.ANGLE_STEP * elapsed) / 1000.0;
+	EarthTexMarker.angle = newAngle % 360;
 
 
 	yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
