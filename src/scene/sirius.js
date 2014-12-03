@@ -6,6 +6,7 @@ SiriusStar.scaleMat 	= new Matrix4( );
 SiriusStar.modelMat 	= new Matrix4( );
 SiriusStar.mvpMat 	= new Matrix4( );
 SiriusStar.lightColor	= new Vector4( );
+SiriusStar.color	= new Vector3( );
 SiriusStar.modelSize 	= 100.0;
 
 
@@ -42,8 +43,10 @@ function drawSiriusStar( axisEnabled ){
 	
 	gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
 
-	color[0] = 0.8; color[1] = 0.8; color[2] = 0.0;
-	gl.uniform3fv(shaderPlanets.uColor, color);
+	SiriusStar.color.elements[0] = 0.8; 
+	SiriusStar.color.elements[1] = 0.8; 
+	SiriusStar.color.elements[2] = 0.0;
+	gl.uniform3fv(shaderPlanets.uColor, SiriusStar.color.elements);
 
 
 	for(var o = 0; o < sphereObj.model.length; o++) { 

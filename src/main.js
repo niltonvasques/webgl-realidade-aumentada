@@ -23,10 +23,7 @@ var axis 		= null;
 var baseTexture		= null;
 var sphereObj		= null;
 var earthObj		= null;
-var color 		= new Float32Array(3);
-var modelMat 		= new Matrix4();
 var MVPMat 		= new Matrix4();
-
 
 var scene 		= new Scene( );
 
@@ -39,22 +36,6 @@ var imageData,
 	detector, 
 	posit;
 
-var modelSize 	= 90.0; //millimeters
-
-var rotMat 	= new Matrix4();
-var transMat 	= new Matrix4();
-var scaleMat 	= new Matrix4();
-
-
-var yaw 		= 0.0,
-	pitch 		= 0.0,
-	roll		= 0.0;
-
-//var textShader		= null;
-var material		= new Array;
-
-var texture			= new Array;
-var textureOK 		= 0;
 
 function main() {
 	// Initializing Camera 	
@@ -126,7 +107,7 @@ function loadResources( ){
 		}else{
 			console.log( "Waiting resources to be loaded!!" );
 			detector 	= new AR.Detector();
-			posit 		= new POS.Posit(modelSize, canvas.width);
+			posit 		= new POS.Posit(90.0, canvas.width);
 			requestAnimationFrame(tick, canvas);
 		}
 	};	
@@ -192,7 +173,6 @@ function drawScene(markers) {
 	if (!videoTexture.needsUpdate) 
 		return;
 	
-	modelMat.setIdentity();
 	scene.viewMat.setIdentity();
 	scene.projMat.setIdentity();
 	scene.projMat.setOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
@@ -200,11 +180,10 @@ function drawScene(markers) {
 	MVPMat.setIdentity();
 	MVPMat.multiply(scene.projMat);
 	MVPMat.multiply(scene.viewMat);
-	MVPMat.multiply(modelMat);
 		
 
 // Desenha a imagem da câmera na tela
-	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); //Responsável por inverter a imagem da câmera na tela
 	gl.disable(gl.DEPTH_TEST);
 	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
 	gl.enable(gl.DEPTH_TEST);

@@ -10,6 +10,7 @@ SolMarker.scaleMat 	= new Matrix4( );
 SolMarker.modelMat 	= new Matrix4( );
 SolMarker.mvpMat 	= new Matrix4( );
 SolMarker.lightColor	= new Vector4( );
+SolMarker.color		= new Vector3( );
 
 function updateSolMarker( markerId, pose ){
 		
@@ -54,17 +55,12 @@ function drawSol( axisEnabled ){
 	SolMarker.modelMat.multiply(SolMarker.rotMat);
 	SolMarker.modelMat.multiply(SolMarker.scaleMat);
 
-	MVPMat.setIdentity( );
-	MVPMat.multiply( scene.projMat );
-	MVPMat.multiply( scene.viewMat );
-	MVPMat.multiply( SolMarker.modelMat );	
-
 	SolMarker.mvpMat.setIdentity( );
 	SolMarker.mvpMat.multiply( scene.projMat );
 	SolMarker.mvpMat.multiply( scene.viewMat );
 	SolMarker.mvpMat.multiply( SolMarker.modelMat );
 	
-	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
+	if( axisEnabled ) drawAxis(axis, shaderAxis, SolMarker.mvpMat);
 
 	try { 
 		gl.useProgram( shaderPlanets );
@@ -73,10 +69,12 @@ function drawSol( axisEnabled ){
 		console.error( err.description );
 	}
 	
-	gl.uniformMatrix4fv( shaderPlanets.uModelMat, false, MVPMat.elements );
+	gl.uniformMatrix4fv( shaderPlanets.uModelMat, false, SolMarker.mvpMat.elements );
 
-	color[0] = 1.0; color[1] = 1.0; color[2] = 0.0;
-	gl.uniform3fv(shaderPlanets.uColor, color);
+	SolMarker.color.elements[0] = 1.0; 
+	SolMarker.color.elements[1] = 1.0; 
+	SolMarker.color.elements[2] = 0.0;
+	gl.uniform3fv(shaderPlanets.uColor, SolMarker.color.elements);
 
 
 	for(var o = 0; o < sphereObj.model.length; o++) { 

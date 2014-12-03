@@ -25,9 +25,9 @@ function updateEarthTex( markerId, pose ) {
 	EarthTexMarker.angle = newAngle % 360;
 
 
-	yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
-	pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
-	roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
+	var yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
+	var pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
+	var roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
 
 	EarthTexMarker.found = true;
 
@@ -39,7 +39,7 @@ function updateEarthTex( markerId, pose ) {
 	EarthTexMarker.transMat.setIdentity();
 	EarthTexMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 
-	console.log(" EarthPosition "+ pose.bestTranslation[0]+ " " +pose.bestTranslation[0]+ " " + -pose.bestTranslation[2] );
+	//console.log(" EarthPosition "+ pose.bestTranslation[0]+ " " +pose.bestTranslation[0]+ " " + -pose.bestTranslation[2] );
 
 	EarthTexMarker.scaleMat.setIdentity();
 	EarthTexMarker.scaleMat.scale( EarthTexMarker.modelSize, EarthTexMarker.modelSize, EarthTexMarker.modelSize );
