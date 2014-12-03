@@ -207,6 +207,8 @@
 	</script>
 
 	<script id="texture-fs" type="x-shader/x-fragment">
+		#define LIGHT_MAX 2
+
 		precision mediump float;
 			
 		varying vec3 vNormal;
@@ -216,8 +218,8 @@
 		uniform sampler2D uSampler0;
 		
 		uniform vec3 uCamPos;
-		uniform vec3 uLPos;
-		uniform vec4 uLColor;
+		uniform vec3 uLPos[LIGHT_MAX];
+		uniform vec4 uLColor[LIGHT_MAX];
 		uniform vec4 uMatAmb;
 		uniform vec4 uMatDif;
 		uniform vec4 uMatSpec;
@@ -226,19 +228,35 @@
 		void main(void) {
 			vec4 texel = texture2D(uSampler0, vTextCoord);
 			
-			vec4 ambient = vec4(uLColor.rgb * uMatAmb.rgb, uMatAmb.a);
-		
-			vec3 vL = normalize(uLPos - vPosW);
-			float teta = max(dot(vL, vNormal), 0.0);
-					
-			vec4 diffuse = vec4(uLColor.rgb * texel.rgb * teta, texel.a);	
+			vec4 ambient = vec4(uLColor[0].rgb * uMatAmb.rgb, uMatAmb.a);
 
-			vec3 vV = normalize(uCamPos - vPosW);
-			vec3 vR = normalize(reflect(-vL, vNormal));
-			float omega = max(dot(vV, vR), 0.0);
-			vec4 specular = vec4(uLColor.rgb * uMatSpec.rgb * pow(omega,uExpSpec), uMatSpec.a);	
+			vec4 total_diffuse  = vec4(0.0, 0.0, 0.0, 0.0 ); 
+			vec4 total_specular = vec4(0.0, 0.0, 0.0, 0.0 ); 
+
+			for(int i = 0; i < LIGHT_MAX; i++){
+		
+				vec3 vL = normalize(uLPos[i] - vPosW);
+				float teta = max(dot(vL, vNormal), 0.0);
+
+				// Calculado a distância entre a luz e o vértice
+				float d		= distance( vPosW, uLPos[i] );
+				//A luz difusa é então multiplicada pelo inverso da distância
+				float lightIntesity	= 100.0;
+				vec4 nMatDif	= texel * lightIntesity / d;
+				vec4 nMatSpec	= uMatSpec * lightIntesity / d;
+
+				vec4 diffuse = vec4( uLColor[i].rgb * nMatDif.rgb * teta, texel.a);	
+				
+				total_diffuse += diffuse;
+
+				vec3 vV = normalize(uCamPos - vPosW);
+				vec3 vR = normalize(reflect(-vL, vNormal));
+				float omega = max(dot(vV, vR), 0.0);
+				vec4 specular = vec4(uLColor[i].rgb * uMatSpec.rgb * pow(omega,uExpSpec), uMatSpec.a);	
+				total_specular += specular;
+			}
 			
-			gl_FragColor = clamp(ambient + diffuse + specular, 0.0, 1.0);
+			gl_FragColor = clamp(ambient + total_diffuse + total_specular, 0.0, 1.0);
 		}
 	</script>
 
@@ -254,6 +272,7 @@
 	<script type="text/javascript" src="ar-libs/aruco.js"></script> 
 
 	<!-- LOGIC -->
+	<script type="text/javascript" src="scene/scene.js"></script>
 	<script type="text/javascript" src="scene/cube.js"></script>
 	<script type="text/javascript" src="scene/sun.js"></script>
 	<script type="text/javascript" src="scene/sirius.js"></script>

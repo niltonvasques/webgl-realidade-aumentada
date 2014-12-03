@@ -25,13 +25,10 @@ var sphereObj		= null;
 var earthObj		= null;
 var color 		= new Float32Array(3);
 var modelMat 		= new Matrix4();
-var ViewMat 		= new Matrix4();
-var ProjMat 		= new Matrix4();
 var MVPMat 		= new Matrix4();
 
-var cameraPos 		= new Vector3();
-var cameraLook 		= new Vector3();
-var cameraUp 		= new Vector3();
+
+var scene 		= new Scene( );
 
 var video, 
 	videoImage, 
@@ -98,6 +95,10 @@ function main() {
 // Initialize buffers
 	initCubeVertexBuffers( gl );
 
+	scene.addLight( new Light( [ 0.0,  0.0,  -200 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // SUN
+	scene.addLight( new Light( [ 0.0, 0.0, -100 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // SIRIUS
+
+
 	// Loading resources, fica aguardando o carregamento dos materiais e objetos
 	// Após o carregamento é dado início a renderização através do mainloop animate/render.
 	loadResources( );
@@ -121,9 +122,6 @@ function loadResources( ){
 		
 		if ( earthObj != null && sphereObj != null && earthObj.model.length > 0 && sphereObj.model.length > 0) {
 			console.log( "Resources loaded!!" );
-			configureCameraPosition( );	
-			rotMat.setIdentity();
-			transMat.setIdentity();
 			animate();
 		}else{
 			console.log( "Waiting resources to be loaded!!" );
@@ -195,19 +193,21 @@ function drawScene(markers) {
 		return;
 	
 	modelMat.setIdentity();
-	ViewMat.setIdentity();
-	ProjMat.setIdentity();
-	ProjMat.setOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+	scene.viewMat.setIdentity();
+	scene.projMat.setIdentity();
+	scene.projMat.setOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
 	
 	MVPMat.setIdentity();
-	MVPMat.multiply(ProjMat);
-	MVPMat.multiply(ViewMat);
+	MVPMat.multiply(scene.projMat);
+	MVPMat.multiply(scene.viewMat);
 	MVPMat.multiply(modelMat);
 		
 
 // Desenha a imagem da câmera na tela
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.disable(gl.DEPTH_TEST);
 	drawTextQuad(baseTexture, shaderBaseImage, MVPMat);
+	gl.enable(gl.DEPTH_TEST);
 
 // Verifica os marcadores encontrados
 // Atualiza as matrizes de localização, translação e rotação dos objetos encontrados	
@@ -216,11 +216,19 @@ function drawScene(markers) {
 
 // Configura a matrix de projeção
 
-	ViewMat.setLookAt(	0.0, 0.0, 0.0,
-    					0.0, 0.0, -1.0,
-    					0.0, 1.0, 0.0 );
+	scene.viewMat.setLookAt(
+			scene.cameraPos.elements[0],
+			scene.cameraPos.elements[1],
+			scene.cameraPos.elements[2],
+			scene.cameraLook.elements[0],
+			scene.cameraLook.elements[1],
+			scene.cameraLook.elements[2],
+			scene.cameraUp.elements[0],
+			scene.cameraUp.elements[1],
+			scene.cameraUp.elements[2]	
+	);
     
-	ProjMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
+	scene.projMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
 // Desenha uma estrela solitária na tela, sem a utilização dos marcadores
 	drawSiriusStar( true );
@@ -274,17 +282,12 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 
 
 
-function configureCameraPosition( ){
-	cameraPos.elements[0] 	= 0.8;
-	cameraPos.elements[1] 	= 0.8;
-	cameraPos.elements[2] 	= 0.8;
-	cameraLook.elements[0] 	= 0.0;
-	cameraLook.elements[1] 	= 0.0;
-	cameraLook.elements[2] 	= 0.0;
-	cameraUp.elements[0] 	= 0.0;
-	cameraUp.elements[1] 	= 1.0;
-	cameraUp.elements[2] 	= 0.0;
-}
+
+
+
+
+
+
 
 
 

@@ -111,14 +111,14 @@ function initCubeVertexBuffers(gl) {
 }
 
 function drawSolidCube( gl, program ) {
-  gl.useProgram(program);   // Tell that this program object is used
+	gl.useProgram(program);   // Tell that this program object is used
 
-  // Assign the buffer objects and enable the assignment
-  initAttributeVariable(gl, program.a_Position, CubeMarker.vertexBuffer); // Vertex coordinates
-  initAttributeVariable(gl, program.a_Normal, CubeMarker.normalBuffer);   // Normal
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, CubeMarker.indexBuffer);  // Bind indices
+	// Assign the buffer objects and enable the assignment
+	initAttributeVariable(gl, program.a_Position, CubeMarker.vertexBuffer); // Vertex coordinates
+	initAttributeVariable(gl, program.a_Normal, CubeMarker.normalBuffer);   // Normal
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, CubeMarker.indexBuffer);  // Bind indices
 
-  drawCube( gl, program );   // Draw
+	drawCube( gl, program );   // Draw
 }
 
 function drawCube( gl, program ) {
@@ -131,13 +131,13 @@ function drawCube( gl, program ) {
 	CubeMarker.modelMat.multiply(CubeMarker.scaleMat);
 
 	MVPMat.setIdentity( );
-	MVPMat.multiply( ProjMat );
-	MVPMat.multiply( ViewMat );
+	MVPMat.multiply( scene.projMat );
+	MVPMat.multiply( scene.viewMat );
 	MVPMat.multiply( CubeMarker.modelMat );	
 
 	CubeMarker.mvpMat.setIdentity( );
-	CubeMarker.mvpMat.multiply( ProjMat );
-	CubeMarker.mvpMat.multiply( ViewMat );
+	CubeMarker.mvpMat.multiply( scene.projMat );
+	CubeMarker.mvpMat.multiply( scene.viewMat );
 	CubeMarker.mvpMat.multiply( CubeMarker.modelMat );
 
 	// Calculate transformation matrix for normals and pass it to u_NormalMatrix

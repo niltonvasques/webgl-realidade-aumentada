@@ -55,13 +55,13 @@ function drawSol( axisEnabled ){
 	SolMarker.modelMat.multiply(SolMarker.scaleMat);
 
 	MVPMat.setIdentity( );
-	MVPMat.multiply( ProjMat );
-	MVPMat.multiply( ViewMat );
+	MVPMat.multiply( scene.projMat );
+	MVPMat.multiply( scene.viewMat );
 	MVPMat.multiply( SolMarker.modelMat );	
 
 	SolMarker.mvpMat.setIdentity( );
-	SolMarker.mvpMat.multiply( ProjMat );
-	SolMarker.mvpMat.multiply( ViewMat );
+	SolMarker.mvpMat.multiply( scene.projMat );
+	SolMarker.mvpMat.multiply( scene.viewMat );
 	SolMarker.mvpMat.multiply( SolMarker.modelMat );
 	
 	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);

@@ -39,6 +39,8 @@ function updateEarthTex( markerId, pose ) {
 	EarthTexMarker.transMat.setIdentity();
 	EarthTexMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 
+	console.log(" EarthPosition "+ pose.bestTranslation[0]+ " " +pose.bestTranslation[0]+ " " + -pose.bestTranslation[2] );
+
 	EarthTexMarker.scaleMat.setIdentity();
 	EarthTexMarker.scaleMat.scale( EarthTexMarker.modelSize, EarthTexMarker.modelSize, EarthTexMarker.modelSize );
 }
@@ -66,58 +68,28 @@ function drawEarthTex( gl, program ) {
 	EarthTexMarker.modelMat.multiply(EarthTexMarker.scaleMat);
 
 	MVPMat.setIdentity( );
-	MVPMat.multiply( ProjMat );
-	MVPMat.multiply( ViewMat );
+	MVPMat.multiply( scene.projMat );
+	MVPMat.multiply( scene.viewMat );
 	MVPMat.multiply( EarthTexMarker.modelMat );	
 
 	EarthTexMarker.mvpMat.setIdentity( );
-	EarthTexMarker.mvpMat.multiply( ProjMat );
-	EarthTexMarker.mvpMat.multiply( ViewMat );
+	EarthTexMarker.mvpMat.multiply( scene.projMat );
+	EarthTexMarker.mvpMat.multiply( scene.viewMat );
 	EarthTexMarker.mvpMat.multiply( EarthTexMarker.modelMat );
 
 	// Calculate transformation matrix for normals and pass it to u_NormalMatrix
 	EarthTexMarker.normalMat.setInverseOf( EarthTexMarker.modelMat );
 	EarthTexMarker.normalMat.transpose( );
-	//gl.uniformMatrix4fv(program.u_NormalMatrix, false, EarthTexMarker.normalMat.elements);
-
-	//gl.uniformMatrix4fv(program.u_MvpMatrix, false, EarthTexMarker.mvpMat.elements);
-
-	//gl.drawElements(gl.TRIANGLES, EarthTexMarker.numIndices, EarthTexMarker.indexBuffer.type, 0);   // Draw
-	var lightColor	= new Vector4();
-
-	lightColor.elements[0] = 1.0;
-	lightColor.elements[1] = 1.0;
-	lightColor.elements[2] = 1.0;
-	lightColor.elements[3] = 1.0;
-			
-	var lightPosV4 		= new Vector3( );
-	lightPosV4.elements[0]	= 0.0;
-	lightPosV4.elements[1]	= cameraPos.elements[1];
-	lightPosV4.elements[2]	= cameraPos.elements[2];
-	lightPosV4.elements[3]	= 1.0;
-
-	
-	
-	var lightPos 		= new Vector3( );
-	lightPos.elements[0]	= 0.0;
-	lightPos.elements[1]	= cameraPos.elements[1];
-	lightPos.elements[2]	= cameraPos.elements[2];
-
-	//MVPMat.setIdentity( );
-	//MVPMat.multiply( ProjMat );
-	//MVPMat.multiply( ViewMat );
-	//lightPos = MVPMat.multiplyVector3( lightPos );
 
 	gl.uniformMatrix4fv(program.uModelMat, false, EarthTexMarker.modelMat.elements);
-	gl.uniformMatrix4fv(program.uViewMat, false, ViewMat.elements);
-	gl.uniformMatrix4fv(program.uProjMat, false, ProjMat.elements);
+	gl.uniformMatrix4fv(program.uViewMat, false, scene.viewMat.elements);
+	gl.uniformMatrix4fv(program.uProjMat, false, scene.projMat.elements);
 	gl.uniformMatrix4fv(program.uNormMat, false, EarthTexMarker.normalMat.elements);
-	gl.uniform3fv(program.uCamPos, cameraPos.elements);
-	gl.uniform4fv(program.uLightColor, lightColor.elements);
-	gl.uniform3fv(program.uLightPos, lightPos.elements);
-	gl.uniform3fv(program.uCamPos, cameraPos.elements);
+	gl.uniform4fv(program.uLightColor, scene.rawLightsColor );
+	gl.uniform3fv(program.uLightPos, scene.rawLightsPos );
+	gl.uniform3fv(program.uCamPos, scene.cameraPos.elements);
 
-	drawEarthTexDetailed( gl, earthObj.model[0], program, gl.TRIANGLES );	
+	drawEarthTexDetailed( gl, earthObj.model[1], program, gl.TRIANGLES );	
 }
 
 

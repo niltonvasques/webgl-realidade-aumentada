@@ -6,14 +6,15 @@ SiriusStar.scaleMat 	= new Matrix4( );
 SiriusStar.modelMat 	= new Matrix4( );
 SiriusStar.mvpMat 	= new Matrix4( );
 SiriusStar.lightColor	= new Vector4( );
+SiriusStar.modelSize 	= 100.0;
 
 
 function drawSiriusStar( axisEnabled ){
 	SiriusStar.scaleMat.setIdentity();
-	SiriusStar.scaleMat.scale( modelSize, modelSize, modelSize );
+	SiriusStar.scaleMat.scale(SiriusStar.modelSize, SiriusStar.modelSize, SiriusStar.modelSize  );
 
 	SiriusStar.transMat.setIdentity( );
-	SiriusStar.transMat.translate( 180, 120, -1000 );
+	SiriusStar.transMat.translate( 0, 0, -200 );
 	
 	SiriusStar.modelMat.setIdentity();
 	SiriusStar.modelMat.multiply(SiriusStar.transMat);
@@ -21,13 +22,13 @@ function drawSiriusStar( axisEnabled ){
 	SiriusStar.modelMat.multiply(SiriusStar.scaleMat);
 
 	SiriusStar.mvpMat.setIdentity( );
-	SiriusStar.mvpMat.multiply( ProjMat );
-	SiriusStar.mvpMat.multiply( ViewMat );
+	SiriusStar.mvpMat.multiply( scene.projMat );
+	SiriusStar.mvpMat.multiply( scene.viewMat );
 	SiriusStar.mvpMat.multiply( SiriusStar.modelMat );
 
 	MVPMat.setIdentity();
-	MVPMat.multiply(ProjMat);
-	MVPMat.multiply(ViewMat);
+	MVPMat.multiply(scene.projMat);
+	MVPMat.multiply(scene.viewMat);
 	MVPMat.multiply(SiriusStar.modelMat);	
 	
 	if( axisEnabled ) drawAxis(axis, shaderAxis, MVPMat);
@@ -41,7 +42,7 @@ function drawSiriusStar( axisEnabled ){
 	
 	gl.uniformMatrix4fv(shaderPlanets.uModelMat, false, MVPMat.elements);
 
-	color[0] = 0.8; color[1] = 0.8; color[2] = 1.0;
+	color[0] = 0.8; color[1] = 0.8; color[2] = 0.0;
 	gl.uniform3fv(shaderPlanets.uColor, color);
 
 
