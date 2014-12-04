@@ -241,7 +241,7 @@
 				// Calculado a distância entre a luz e o vértice
 				float d		= distance( vPosW, uLPos[i] );
 				//A luz difusa é então multiplicada pelo inverso da distância
-				float lightIntesity	= 100.0;
+				float lightIntesity	= 300.0;
 				vec4 nMatDif	= texel * lightIntesity / d;
 				vec4 nMatSpec	= uMatSpec * lightIntesity / d;
 
@@ -313,7 +313,7 @@
 				// Calculado a distância entre a luz e o vértice
 				float d		= distance( vPosW, uLPos[i] );
 				//A luz difusa é então multiplicada pelo inverso da distância
-				float lightIntesity	= 100.0;
+				float lightIntesity	= 300.0;
 				vec4 nMatDif	= uMatDif * lightIntesity / d;
 				vec4 nMatSpec	= uMatSpec * lightIntesity / d;
 

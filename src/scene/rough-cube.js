@@ -53,9 +53,9 @@ function updateRoughCube( markerId, pose ) {
 function drawRoughCubeShader( ) {
 	if( !RoughCube.found ) return;
 
-	gl.useProgram( shaderTexture );   // Tell that this program object is used
+	gl.useProgram( shaderNormalMap );   // Tell that this program object is used
 
-	drawRoughCube( gl, shaderTexture );   // Draw
+	drawRoughCube( gl, shaderNormalMap );   // Draw
 }
 
 function drawRoughCube( gl, program ) {
@@ -76,13 +76,6 @@ function drawRoughCube( gl, program ) {
 	RoughCube.normalMat.setInverseOf( RoughCube.modelMat );
 	RoughCube.normalMat.transpose( );
 
-	gl.uniformMatrix4fv(program.uModelMat, false, RoughCube.modelMat.elements);
-	gl.uniformMatrix4fv(program.uViewMat, false, scene.viewMat.elements);
-	gl.uniformMatrix4fv(program.uProjMat, false, scene.projMat.elements);
-	gl.uniformMatrix4fv(program.uNormMat, false, RoughCube.normalMat.elements);
-	gl.uniform4fv(program.uLightColor, scene.rawLightsColor );
-	gl.uniform3fv(program.uLightPos, scene.rawLightsPos );
-	gl.uniform3fv(program.uCamPos, scene.cameraPos.elements);
 	
 //	for( var o = 0; o < roughCubeObj.model.length; o++ )
 		drawRoughCubeDetailed( gl, roughCubeObj.model[0], program, gl.TRIANGLES );	
@@ -109,20 +102,20 @@ function drawRoughCubeDetailed(gl, o, shaderProgram, primitive) {
 		gl.bindTexture(gl.TEXTURE_2D, roughCubeObj.textures[texNormMap*2+1]);
 		}
 	if (o.Material != -1) {
-		matAmb.elements[0] = roughCubeObj.material[texNormMap].Ka.r;
-		matAmb.elements[1] = roughCubeObj.material[texNormMap].Ka.g;
-		matAmb.elements[2] = roughCubeObj.material[texNormMap].Ka.b;
-		matAmb.elements[3] = roughCubeObj.material[texNormMap].Ka.a;
+		matAmb.elements[0] = roughCubeObj.material[o.Material].Ka.r;
+		matAmb.elements[1] = roughCubeObj.material[o.Material].Ka.g;
+		matAmb.elements[2] = roughCubeObj.material[o.Material].Ka.b;
+		matAmb.elements[3] = roughCubeObj.material[o.Material].Ka.a;
 	
-		matDif.elements[0] = roughCubeObj.material[texNormMap].Kd.r;
-		matDif.elements[1] = roughCubeObj.material[texNormMap].Kd.g;
-		matDif.elements[2] = roughCubeObj.material[texNormMap].Kd.b;
-		matDif.elements[3] = roughCubeObj.material[texNormMap].Kd.a;
+		matDif.elements[0] = roughCubeObj.material[o.Material].Kd.r;
+		matDif.elements[1] = roughCubeObj.material[o.Material].Kd.g;
+		matDif.elements[2] = roughCubeObj.material[o.Material].Kd.b;
+		matDif.elements[3] = roughCubeObj.material[o.Material].Kd.a;
 	
-		matSpec.elements[0] = roughCubeObj.material[texNormMap].Ks.r;
-		matSpec.elements[1] = roughCubeObj.material[texNormMap].Ks.g;
-		matSpec.elements[2] = roughCubeObj.material[texNormMap].Ks.b;
-		matSpec.elements[3] = roughCubeObj.material[texNormMap].Ks.a;
+		matSpec.elements[0] = roughCubeObj.material[o.Material].Ks.r;
+		matSpec.elements[1] = roughCubeObj.material[o.Material].Ks.g;
+		matSpec.elements[2] = roughCubeObj.material[o.Material].Ks.b;
+		matSpec.elements[3] = roughCubeObj.material[o.Material].Ks.a;
 		
 		Ns = roughCubeObj.material[texNormMap].Ns;
 		}
@@ -148,9 +141,8 @@ function drawRoughCubeDetailed(gl, o, shaderProgram, primitive) {
 	gl.uniformMatrix4fv(shaderProgram.uModelMat, false, RoughCube.modelMat.elements);
 	gl.uniformMatrix4fv(shaderProgram.uMVPMat, false, RoughCube.mvpMat.elements);
 	gl.uniformMatrix4fv(shaderProgram.uNormMat, false, RoughCube.normalMat.elements);
-	gl.uniform3fv(shaderProgram.uCamPos, scene.cameraPos.elements);
-	gl.uniform4fv(shaderProgram.uLightColor, scene.rawLightsColor );
-	gl.uniform3fv(shaderProgram.uLightPos, scene.rawLightsPos );
+	gl.uniform4fv(shaderProgram.uLightColor, scene.lights[1].color );
+        gl.uniform3fv(shaderProgram.uLightPos, scene.lights[1].pos );
 	gl.uniform3fv(shaderProgram.uCamPos, scene.cameraPos.elements);
 
 	gl.uniform4fv(shaderProgram.uMatAmb, matAmb.elements);

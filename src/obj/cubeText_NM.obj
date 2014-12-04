@@ -3,7 +3,7 @@
 
 mtllib cubeText_NM.mtl 
 g cube
-usemtl GrayWall
+usemtl bricks
 
 v  1.0 -1.0 -1.0
 v  1.0 -1.0  1.0
