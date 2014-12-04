@@ -788,3 +788,57 @@ function initNormalMapTexture( obj, filename, texInd) {
 	}
 	image.src = filename;
 }
+
+
+function initNormalMapShader( ){
+	var normalMapVShader = getScriptContent( "normalMapping-vs" );
+	var normalMapFShader = getScriptContent( "normalMapping-fs" );
+
+
+	// Initialize shaders
+	shaderNormalMap = createProgram(gl, normalMapVShader, normalMapFShader );   
+
+	if ( !shaderNormalMap ) {
+		console.log('Failed to intialize shaders.');
+		return;
+	}
+
+	shaderNormalMap.vPositionAttr 	= gl.getAttribLocation(shaderNormalMap, "aVPosition");		
+	shaderNormalMap.vNormalAttr 		= gl.getAttribLocation(shaderNormalMap, "aVNorm");
+	shaderNormalMap.vTexCoordAttr 	= gl.getAttribLocation(shaderNormalMap, "aVTexCoord");
+
+	shaderNormalMap.uTexture 		= gl.getUniformLocation(shaderNormalMap, "uTexture");
+	shaderNormalMap.uNormalMap 		= gl.getUniformLocation(shaderNormalMap, "uNormalMap");	
+	shaderNormalMap.uModelMat 		= gl.getUniformLocation(shaderNormalMap, "uModelMat");
+	shaderNormalMap.uMVPMat 		= gl.getUniformLocation(shaderNormalMap, "uMVPMat");
+	shaderNormalMap.uModelMat 		= gl.getUniformLocation(shaderNormalMap, "uModelMat");
+	shaderNormalMap.uNormMat 		= gl.getUniformLocation(shaderNormalMap, "uNormMat");
+	
+	if (shaderNormalMap.vPositionAttr < 0 	|| 
+		shaderNormalMap.vColorAttr < 0 		|| 
+		shaderNormalMap.uTexture < 0 		|| 
+		shaderNormalMap.uNormalMap < 0 		|| 
+		!shaderNormalMap.uModelMat 			|| 
+		!shaderNormalMap.uMVPMat 			|| 
+		!shaderNormalMap.uNormMat ) {
+		console.log("Error getAttribLocation shaderNormalMap"); 
+		return;
+	}
+		
+	shaderNormalMap.uCamPos 			= gl.getUniformLocation(shaderNormalMap, "uCamPos");
+	shaderNormalMap.uLightPos 		= gl.getUniformLocation(shaderNormalMap, "uLPos");
+	shaderNormalMap.uLightColor 		= gl.getUniformLocation(shaderNormalMap, "uLColor");
+	shaderNormalMap.uMatAmb 			= gl.getUniformLocation(shaderNormalMap, "uMatAmb");
+	shaderNormalMap.uMatDif 			= gl.getUniformLocation(shaderNormalMap, "uMatDif");
+	shaderNormalMap.uMatSpec			= gl.getUniformLocation(shaderNormalMap, "uMatSpec");
+	shaderNormalMap.uExpSpec			= gl.getUniformLocation(shaderNormalMap, "uExpSpec");
+	
+	if (shaderNormalMap.uCamPos < 0	 		|| shaderNormalMap.uLightPos < 0 	|| 
+		shaderNormalMap.uLightColor < 0		|| shaderNormalMap.uMatAmb < 0 		|| 
+		shaderNormalMap.uMatDif < 0			|| shaderNormalMap.uMatSpec < 0 		|| 
+		shaderNormalMap.uExpSpec < 0 ) {
+		console.log("Error getAttribLocation"); 
+		return;
+	}
+
+}

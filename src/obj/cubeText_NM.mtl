@@ -3,27 +3,27 @@ Kd 1.0 0.3 0.7
 Ka 0.2 0.2 0.2
 Ks 1.0 1.0 1.0
 Ns 100.0
-map_Kd ../Textures/bricks.jpg
+map_Kd tex/bricks.jpg
 
 newmtl blackHoles
 Kd 1.0 0.3 0.7
 Ka 0.2 0.2 0.2
 Ks 1.0 1.0 1.0
 Ns 20.0
-map_Kd ../Textures/blackHoles.jpg
+map_Kd tex/blackHoles.jpg
 
 newmtl MetalGround
 Kd 1.0 0.3 0.7
 Ka 0.2 0.2 0.2
 Ks 1.0 1.0 1.0
 Ns 20.0
-map_Kd ../Textures/MetalGround.jpg
+map_Kd tex/MetalGround.jpg
 
 newmtl GrayWall
 Kd 1.0 0.3 0.7
 Ka 0.2 0.2 0.2
 Ks 1.0 1.0 1.0
 Ns 20.0
-map_Kd ../Textures/grayWall.jpg
+map_Kd tex/grayWall.jpg
 
 

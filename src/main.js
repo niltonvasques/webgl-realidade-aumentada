@@ -20,11 +20,13 @@ var shaderTerra   	= null;
 var shaderSolid 	= null;
 var shaderPhong 	= null;
 var shaderTexture 	= null;
+var shaderNormalMap 	= null;
 
 var axis 		= null;
 var baseTexture		= null;
 var sphereObj		= null;
 var earthObj		= null;
+var roughCubeObj	= null;
 var MVPMat 		= new Matrix4();
 
 var scene 		= new Scene( );
@@ -77,6 +79,8 @@ function main() {
 
 	initPhongShader( );
 
+	initNormalMapShader( );
+
 // Initialize buffers
 	initCubeVertexBuffers( gl );
 
@@ -108,11 +112,11 @@ function loadResources( ){
 			earthObj = onEarthReadComplete( gl, earthOBJLoad );
 		}
 
-		if ( normalMapObj == null && earthOBJLoad.g_objDoc != null && earthOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
-			normalMapObj = onNormalMapReadComplete( gl, earthOBJLoad );
+		if ( roughCubeObj == null && normalMapOBJLoad.g_objDoc != null && normalMapOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
+			roughCubeObj = onNormalMapReadComplete( gl, normalMapOBJLoad );
 		}
 		
-		if ( earthObj != null && sphereObj != null && earthObj.model.length > 0 && sphereObj.model.length > 0) {
+		if ( earthObj != null && sphereObj != null && roughCubeObj != null && earthObj.model.length > 0 && sphereObj.model.length > 0 && roughCubeObj.model.length > 0) {
 			console.log( "Resources loaded!!" );
 			animate();
 		}else{
@@ -238,6 +242,8 @@ function drawScene(markers) {
 	drawEarthTexShader( );
 
 	drawSunPhong( );
+
+	drawRoughCubeShader( );
 }
 
 // ********************************************************
@@ -273,6 +279,8 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 		updateEarthTex( markers[m].id, pose );
 
 		updateSunPhong( markers[m].id, pose );
+
+		updateRoughCube( markers[m].id, pose );
 	}
 };
 
