@@ -172,5 +172,7 @@ function drawEarthTexDetailed(gl, o, shaderProgram, primitive) {
 	gl.drawElements(primitive, o.numObjects, gl.UNSIGNED_SHORT, 0);
 		
 	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	drawMoonPhong( );
 }
 
