@@ -85,7 +85,7 @@ function main() {
     initCubeVertexBuffers( gl );
 
     scene.addLight( new Light( [ 0.0,  0.0,  -200 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // SUN
-    scene.addLight( new Light( [ 0.0, 0.0, -100 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // SIRIUS
+    scene.addLight( new Light( [ 0.0, 0.0, -100 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // Camera
 
 
     // Loading resources, fica aguardando o carregamento dos materiais e objetos
@@ -101,6 +101,9 @@ function loadResources( ){
     var earthOBJLoad = new OBJLoad( );
     earthOBJLoad.readOBJFile("obj/earth.obj", gl, 1, true);
 
+    //var moonOBJLoad = new OBJLoad( );
+    //moonOBJLoad.readOBJFile("obj/moon.obj", gl, 1, true);
+
     var normalMapOBJLoad = new OBJLoad( );
     normalMapOBJLoad.readOBJFile("obj/cubeText_NM.obj", gl, 1, true);
 
@@ -108,15 +111,22 @@ function loadResources( ){
         if ( sphereObj == null && sphereOBJLoad.g_objDoc != null && sphereOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
             sphereObj = onSphereReadComplete( gl, sphereOBJLoad );
         }
+
         if ( earthObj == null && earthOBJLoad.g_objDoc != null && earthOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
-            earthObj = onEarthReadComplete( gl, earthOBJLoad );
+            //earthObj = onEarthReadComplete( gl, earthOBJLoad );
+            earthObj = onNormalMapReadComplete( gl, earthOBJLoad );
         }
+
+        //if ( moonObj == null && moonOBJLoad.g_objDoc != null && moonOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
+        //    moonObj = onNormalMapReadComplete( gl, moonOBJLoad );
+        //}
 
         if ( roughCubeObj == null && normalMapOBJLoad.g_objDoc != null && normalMapOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
             roughCubeObj = onNormalMapReadComplete( gl, normalMapOBJLoad );
         }
 
-        if ( earthObj != null && sphereObj != null && roughCubeObj != null && earthObj.model.length > 0 && sphereObj.model.length > 0 && roughCubeObj.model.length > 0) {
+        if ( earthObj != null && sphereObj != null && roughCubeObj != null 
+            && earthObj.model.length > 0 && sphereObj.model.length > 0 && roughCubeObj.model.length > 0 ) {
             console.log( "Resources loaded!!" );
             animate();
         }else{
@@ -243,7 +253,8 @@ function drawScene(markers) {
 
 
     if( EarthTexMarker.found )
-        drawMoonPhongInner( gl, shaderPhong );
+        drawMoonTex( gl, shaderNormalMap );
+        //drawMoonPhongInner( gl, shaderPhong );
 
    // drawSunPhong( );
 

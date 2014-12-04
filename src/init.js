@@ -761,6 +761,7 @@ function initNormalMapTextures( obj, g_drawingInfo ) {
 			if (m.materials[j].mapKd != "") {
 				initNormalMapTexture(obj, m.materials[j].mapKd, j*2);
 				var normalMapFilename = m.materials[j].mapKd.replace(".jpg", "NM.jpg");		
+				normalMapFilename = normalMapFilename.replace(".png", "NM.png");		
 				initNormalMapTexture(obj, normalMapFilename, j*2+1);
 				}
 			}
