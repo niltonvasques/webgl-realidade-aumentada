@@ -241,6 +241,10 @@ function drawScene(markers) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 	drawEarthTexShader( );
 
+
+	if( EarthTexMarker.found )
+		drawMoonPhongInner( gl, shaderPhong );
+
 	drawSunPhong( );
 
 	drawRoughCubeShader( );
@@ -258,7 +262,9 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 	CubeMarker.found 	= false;
 	//EarthTexMarker.found 	= false; // Mantém o posicionamento após o marcador sumir
 
-	updateEarthTexAngle( );
+	//updateEarthTexAngle( );
+
+	updateRoughCubeAngle( );
 
 	for(var m = 0; m < markers.length; m++ ){
 

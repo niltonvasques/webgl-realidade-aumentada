@@ -1,5 +1,6 @@
 var EarthTexMarker 		= new Object( );
 EarthTexMarker.id		= 24;
+EarthTexMarker.rotMarkerMat	= new Matrix4( );
 EarthTexMarker.rotMat 		= new Matrix4( );
 EarthTexMarker.transMat 	= new Matrix4( );
 EarthTexMarker.scaleMat 	= new Matrix4( );
@@ -20,7 +21,6 @@ function updateEarthTexAngle( ){
 	var newAngle = EarthTexMarker.angle + (EarthTexMarker.ANGLE_STEP * elapsed) / 1000.0;
 	EarthTexMarker.angle = newAngle % 360;
 
-	EarthTexMarker.rotMat.setIdentity();
 }
 
 function updateEarthTex( markerId, pose ) {
@@ -28,16 +28,17 @@ function updateEarthTex( markerId, pose ) {
 		return;
 	}
 
-
 	var yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
 	var pitch 	= -Math.asin(-pose.bestRotation[1][2]) * 180.0/Math.PI;
 	var roll 	= Math.atan2(pose.bestRotation[1][0], pose.bestRotation[1][1]) * 180.0/Math.PI;
 
 	EarthTexMarker.found = true;
 
-	EarthTexMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
-	EarthTexMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
-	EarthTexMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
+	EarthTexMarker.rotMarkerMat.setIdentity( );
+
+	EarthTexMarker.rotMarkerMat.rotate(yaw, 0.0, 1.0, 0.0);
+	EarthTexMarker.rotMarkerMat.rotate(pitch, 1.0, 0.0, 0.0);
+	EarthTexMarker.rotMarkerMat.rotate(roll, 0.0, 0.0, 1.0);
 
 	EarthTexMarker.transMat.setIdentity();
 	EarthTexMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
@@ -59,7 +60,11 @@ function drawEarthTexShader( ) {
 function drawEarthTex( gl, program ) {
 	if( !EarthTexMarker.found ) return;
 
+	updateEarthTexAngle( );
+
+	EarthTexMarker.rotMat.set( EarthTexMarker.rotMarkerMat );
 	EarthTexMarker.rotMat.rotate(EarthTexMarker.angle, 0.0, 1.0, 0.0);
+
 	EarthTexMarker.modelMat.setIdentity();
 	EarthTexMarker.modelMat.multiply(EarthTexMarker.transMat);
 	EarthTexMarker.modelMat.multiply(EarthTexMarker.rotMat);
@@ -172,7 +177,5 @@ function drawEarthTexDetailed(gl, o, shaderProgram, primitive) {
 	gl.drawElements(primitive, o.numObjects, gl.UNSIGNED_SHORT, 0);
 		
 	gl.bindTexture(gl.TEXTURE_2D, null);
-
-	drawMoonPhong( );
 }
 

@@ -425,6 +425,16 @@
 	<script type="text/javascript" src="utils.js"></script>
 	<script type="text/javascript" src="aruco.js"></script>
 
+	<style>
+		.flip {
+			-moz-transform: scale(-1, 1);
+			-webkit-transform: scale(-1, 1);
+			-o-transform: scale(-1, 1);
+			transform: scale(-1, 1);
+			filter: FlipH;
+		}
+	</style>
+
 
 </head>
 
@@ -435,10 +445,15 @@
     <div id="output"> </div>
     <br/>
 	<div style="text-align: center;">
-		<canvas id="videoGL" width="320" height="240" style="visibility: visible;"></canvas>
+		<canvas class="flip" id="videoGL" width="320" height="240" style="visibility: visible;"></canvas>
 	</div>
 	<video id="monitor" autoplay width="320" height="240" style="visibility: hidden;"></video>
 	<canvas id="videoImage" width="256" height="256" style="visibility: hidden;"></canvas>
+	<!-- <div style="text-align: center;">
+		<canvas id="videoGL" width="640" height="480" style="visibility: visible;"></canvas>
+	</div> -->
+	<!-- <video id="monitor" autoplay width="640" height="480" style="visibility: hidden;"></video> -->
+	<!-- <canvas id="videoImage" width="512" height="512" style="visibility: hidden;"></canvas> -->
 </body>
 
 </html>

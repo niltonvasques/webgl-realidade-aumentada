@@ -32,6 +32,7 @@ function initGL(canvas) {
 	// Necessário para a correta renderização do algoritmo de phong, com a iluminação
 	gl.enable(gl.CULL_FACE);
 	//gl.frontFace(gl.CCW);
+	
 	return gl;
 }
 
@@ -42,6 +43,9 @@ function getHtmlElements( ){
 	video = document.getElementById("monitor");
 	videoImage = document.getElementById("videoImage");
 	videoImageContext = videoImage.getContext("2d");
+
+	//videoImageContext.translate( videoImage.width, 0 );
+	//videoImageContext.scale( -1, 1 );
 	
 	// background color if no video present
 	videoImageContext.fillStyle = "#005337";

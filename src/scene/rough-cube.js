@@ -84,8 +84,8 @@ function drawRoughCube( gl, program ) {
 	gl.uniform3fv(program.uLightPos, scene.rawLightsPos );
 	gl.uniform3fv(program.uCamPos, scene.cameraPos.elements);
 	
-	for( var o = 0; o < roughCubeObj.model.length; o++ )
-		drawRoughCubeDetailed( gl, roughCubeObj.model[o], program, gl.TRIANGLES );	
+//	for( var o = 0; o < roughCubeObj.model.length; o++ )
+		drawRoughCubeDetailed( gl, roughCubeObj.model[0], program, gl.TRIANGLES );	
 }
 
 
@@ -109,22 +109,22 @@ function drawRoughCubeDetailed(gl, o, shaderProgram, primitive) {
 		gl.bindTexture(gl.TEXTURE_2D, roughCubeObj.textures[texNormMap*2+1]);
 		}
 	if (o.Material != -1) {
-		matAmb.elements[0] = roughCubeObj.material[o.Material].Ka.r;
-		matAmb.elements[1] = roughCubeObj.material[o.Material].Ka.g;
-		matAmb.elements[2] = roughCubeObj.material[o.Material].Ka.b;
-		matAmb.elements[3] = roughCubeObj.material[o.Material].Ka.a;
+		matAmb.elements[0] = roughCubeObj.material[texNormMap].Ka.r;
+		matAmb.elements[1] = roughCubeObj.material[texNormMap].Ka.g;
+		matAmb.elements[2] = roughCubeObj.material[texNormMap].Ka.b;
+		matAmb.elements[3] = roughCubeObj.material[texNormMap].Ka.a;
 	
-		matDif.elements[0] = roughCubeObj.material[o.Material].Kd.r;
-		matDif.elements[1] = roughCubeObj.material[o.Material].Kd.g;
-		matDif.elements[2] = roughCubeObj.material[o.Material].Kd.b;
-		matDif.elements[3] = roughCubeObj.material[o.Material].Kd.a;
+		matDif.elements[0] = roughCubeObj.material[texNormMap].Kd.r;
+		matDif.elements[1] = roughCubeObj.material[texNormMap].Kd.g;
+		matDif.elements[2] = roughCubeObj.material[texNormMap].Kd.b;
+		matDif.elements[3] = roughCubeObj.material[texNormMap].Kd.a;
 	
-		matSpec.elements[0] = roughCubeObj.material[o.Material].Ks.r;
-		matSpec.elements[1] = roughCubeObj.material[o.Material].Ks.g;
-		matSpec.elements[2] = roughCubeObj.material[o.Material].Ks.b;
-		matSpec.elements[3] = roughCubeObj.material[o.Material].Ks.a;
+		matSpec.elements[0] = roughCubeObj.material[texNormMap].Ks.r;
+		matSpec.elements[1] = roughCubeObj.material[texNormMap].Ks.g;
+		matSpec.elements[2] = roughCubeObj.material[texNormMap].Ks.b;
+		matSpec.elements[3] = roughCubeObj.material[texNormMap].Ks.a;
 		
-		Ns = roughCubeObj.material[o.Material].Ns;
+		Ns = roughCubeObj.material[texNormMap].Ns;
 		}
 	else {
 		matAmb.elements[0] = 

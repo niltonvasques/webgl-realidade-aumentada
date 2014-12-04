@@ -1,8 +1,8 @@
 newmtl bricks
 Kd 1.0 0.3 0.7
-Ka 0.2 0.2 0.2
-Ks 1.0 1.0 1.0
-Ns 100.0
+Ka 0.1 0.1 0.1
+Ks 0.2 0.2 0.2
+Ns 30.0
 map_Kd tex/bricks.jpg
 
 newmtl blackHoles
