@@ -335,6 +335,7 @@
 
 
 	<script id="normalMapping-vs" type="x-shader/x-vertex">
+
 		attribute vec3 aVPosition;
 		attribute vec3 aVNorm;
 		attribute vec2 aVTexCoord;
@@ -360,6 +361,8 @@
 	</script>
 
 	<script id="normalMapping-fs" type="x-shader/x-fragment">
+                #define LIGHT_MAX 16
+
 		precision mediump float;
 			
 		varying vec3 vPosW;	
@@ -370,8 +373,9 @@
 		uniform sampler2D uNormalMap;
 		
 		uniform vec3 uCamPos;
-		uniform vec3 uLPos;
-		uniform vec4 uLColor;
+		uniform vec3 uLPos[LIGHT_MAX];
+		uniform vec4 uLColor[LIGHT_MAX];
+		uniform int uLSize;
 		uniform vec4 uMatAmb;
 		uniform vec4 uMatDif;
 		uniform vec4 uMatSpec;
@@ -380,20 +384,28 @@
 		void main(void) {
 			vec4 nMap 		= texture2D(uNormalMap, vTextCoord);
 			vec3 vNM 		= normalize(nMap.xyz);
-			
-			vec4 ambient 	= uLColor * uMatAmb;
-		
-			vec4 texel 		= texture2D(uTexture, vTextCoord);
-			vec3 vL 		= normalize(uLPos - vPosW);
-			float teta 		= max(dot(vL, vNM), 0.0);			
-			vec4 diffuse 	= uLColor * texel * teta;	
 
-			vec3 vV 		= normalize(uCamPos - vPosW);
-			vec3 vR 		= normalize(reflect(-vL, vNM));
-			float omega 	= max(dot(vV, vR), 0.0);
-			vec4 specular 	= uLColor * uMatSpec * pow(omega,uExpSpec);	
+                        vec4 total_ambient = vec4( 0.0 );
+                        vec4 total_diffuse = vec4( 0.0 );
+                        vec4 total_specular = vec4( 0.0 );
+                        
+                        for( int i = 0; i < LIGHT_MAX; i++ ){
+                            if( i < uLSize ) { 
+                                total_ambient 	+= uLColor[i] * uMatAmb;
+                        
+                                vec4 texel 		= texture2D(uTexture, vTextCoord);
+                                vec3 vL 		= normalize(uLPos[i] - vPosW);
+                                float teta 		= max(dot(vL, vNM), 0.0);			
+                                total_diffuse 	+= uLColor[i] * texel * teta;	
+
+                                vec3 vV 		= normalize(uCamPos - vPosW);
+                                vec3 vR 		= normalize(reflect(-vL, vNM));
+                                float omega 	= max(dot(vV, vR), 0.0);
+                                total_specular 	+= uLColor[i] * uMatSpec * pow(omega,uExpSpec);	
+                            }
+                        }
 			
-			gl_FragColor 	= clamp(ambient + diffuse + specular, 0.0, 1.0);
+			gl_FragColor 	= clamp(total_ambient + total_diffuse + total_specular, 0.0, 1.0);
 		}
 	</script>
 	<!-- LIBRARYS -->

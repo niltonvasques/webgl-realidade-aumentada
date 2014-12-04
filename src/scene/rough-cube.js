@@ -141,8 +141,9 @@ function drawRoughCubeDetailed(gl, o, shaderProgram, primitive) {
 	gl.uniformMatrix4fv(shaderProgram.uModelMat, false, RoughCube.modelMat.elements);
 	gl.uniformMatrix4fv(shaderProgram.uMVPMat, false, RoughCube.mvpMat.elements);
 	gl.uniformMatrix4fv(shaderProgram.uNormMat, false, RoughCube.normalMat.elements);
-	gl.uniform4fv(shaderProgram.uLightColor, scene.lights[1].color );
-        gl.uniform3fv(shaderProgram.uLightPos, scene.lights[1].pos );
+	gl.uniform4fv(shaderProgram.uLightColor, scene.rawLightsColor );
+        gl.uniform3fv(shaderProgram.uLightPos, scene.rawLightsPos );
+        gl.uniform1i(shaderProgram.uLightSize, scene.lights.length );
 	gl.uniform3fv(shaderProgram.uCamPos, scene.cameraPos.elements);
 
 	gl.uniform4fv(shaderProgram.uMatAmb, matAmb.elements);
