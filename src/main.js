@@ -85,7 +85,7 @@ function main() {
     initCubeVertexBuffers( gl );
 
     scene.addLight( new Light( [ 0.0,  0.0,  -200 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // SUN
-    scene.addLight( new Light( [ 0.0, 0.0, -100 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // Camera
+    scene.addLight( new Light( [ 0.0, 0.0, -100 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // MOON 
 
 
     // Loading resources, fica aguardando o carregamento dos materiais e objetos
@@ -299,6 +299,13 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 
         updateRoughCube( markers[m].id, pose );
     }
+
+
+// Atualizando constantemente a posição da luz da lua
+    scene.lights[1].pos[0] = MoonTex.position[0]; 
+    scene.lights[1].pos[1] = MoonTex.position[1]; 
+    scene.lights[1].pos[2] = MoonTex.position[2]; 
+    scene.updateRawLights( );
 };
 
 

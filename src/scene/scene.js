@@ -31,3 +31,11 @@ Scene.prototype.addLight = function ( light ){
 	this.rawLightsColor 	= this.rawLightsColor.concat( light.color );
 }
 
+Scene.prototype.updateRawLights = function ( ){
+    this.rawLightsPos = new Array( );
+    this.rawLightsColor = new Array( );
+    for( var i = 0; i < this.lights.length; i++ ) {
+        this.rawLightsPos 	= this.rawLightsPos.concat( this.lights[i].pos );
+        this.rawLightsColor 	= this.rawLightsColor.concat( this.lights[i].color );
+    }
+}

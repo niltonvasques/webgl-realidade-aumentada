@@ -410,7 +410,7 @@
 
                                 float lightIntesity	= 100.0;
                                 float attenuation        = lightIntesity / d; 
-                                total_contribution += attenuation * ( ambient + diffuse + specular );
+                                total_contribution += ambient + attenuation * ( diffuse + specular );
                             }
                         }
 			

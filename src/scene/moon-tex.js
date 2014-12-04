@@ -7,6 +7,7 @@ MoonTex.modelMat 	= new Matrix4( );
 MoonTex.normalMat 	= new Matrix4( );
 MoonTex.mvpMat 		= new Matrix4( );
 MoonTex.lightColor	= new Vector4( );
+MoonTex.position        = new Vector4( );
 MoonTex.angle 		= 0.0;
 MoonTex.modelSize 	= 50.0;
 MoonTex.ANGLE_STEP	= 30.0;
@@ -43,6 +44,13 @@ function drawMoonTex( gl, program ) {
 	// Calculate transformation matrix for normals and pass it to u_NormalMatrix
 	MoonTex.normalMat.setInverseOf( MoonTex.modelMat );
 	MoonTex.normalMat.transpose( );
+
+        MoonTex.position = new Vector4( );
+        MoonTex.position.elements[0] = 1.0;
+        MoonTex.position.elements[1] = 1.0;
+        MoonTex.position.elements[2] = 1.0;
+        MoonTex.position.elements[3] = 1.0;
+        MoonTex.position = MoonTex.modelMat.multiplyVector4( MoonTex.position ).elements; 
 
 	drawMoonTexDetailed( gl, earthObj.model[0], program, gl.TRIANGLES );	
 }
