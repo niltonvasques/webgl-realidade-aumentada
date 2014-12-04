@@ -678,3 +678,113 @@ function initPhongShader( ){
 	}
 
 }
+
+function onNormalMapReadComplete( gl, objload ) {
+	var obj = new Object( );
+
+	var model = new Array( );
+	var material = new Array( );
+	var textures = new Array( );
+	
+	var groupModel = null;
+
+	g_drawingInfo 	= objload.g_objDoc.getDrawingInfo();
+	
+	for(var o = 0; o < g_drawingInfo.numObjects; o++) {
+		
+		groupModel = new Object();
+
+		groupModel.vertexBuffer = gl.createBuffer();
+		if (groupModel.vertexBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.vertexBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.vertices[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create vertexBuffer");
+	
+		groupModel.normalBuffer = gl.createBuffer();
+		if (groupModel.normalBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.normalBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.normals[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create normalBuffer");
+		
+		groupModel.texCoordBuffer = gl.createBuffer();
+		if (groupModel.texCoordBuffer) {		
+			gl.bindBuffer(gl.ARRAY_BUFFER, groupModel.texCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, g_drawingInfo.textCoords[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create texCoordBuffer");
+
+		groupModel.indexBuffer = gl.createBuffer();
+		if (groupModel.indexBuffer) {		
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, groupModel.indexBuffer);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g_drawingInfo.indices[o], gl.STATIC_DRAW);
+			}
+		else
+			alert("ERROR: can not create indexBuffer");
+		
+		groupModel.numObjects 	= g_drawingInfo.indices[o].length;
+		groupModel.Material 	= g_drawingInfo.materials[o];
+		
+		model.push(groupModel);
+	}
+		
+  	for(var i = 0; i < g_drawingInfo.mtl.length; i++) 
+		for(var j = 0; j < g_drawingInfo.mtl[i].materials.length; j++) 
+			material.push(g_drawingInfo.mtl[i].materials[j]);
+	
+	obj.material = material;
+	obj.model = model;
+	obj.textures = textures;
+	obj.textureOK = 0;
+
+	initNormalMapTextures( obj, g_drawingInfo );
+	
+	return obj;
+}
+// ********************************************************
+// ********************************************************
+function initNormalMapTextures( obj, g_drawingInfo ) {
+	
+	obj.textures	= new Array(g_drawingInfo.mtl.length*2);
+
+	for(var i = 0 ; i < g_drawingInfo.mtl.length ; i++) {
+		var m = g_drawingInfo.mtl[i];
+		for(var j = 0 ; j < m.materials.length ; j++) {
+			if (m.materials[j].mapKd != "") {
+				initNormalMapTexture(obj, m.materials[j].mapKd, j*2);
+				var normalMapFilename = m.materials[j].mapKd.replace(".jpg", "NM.jpg");		
+				initNormalMapTexture(obj, normalMapFilename, j*2+1);
+				}
+			}
+		}
+}
+
+// ********************************************************
+// ********************************************************
+function initNormalMapTexture( obj, filename, texInd) {
+	
+	var image = new Image();
+	
+	image.onload = function() {
+		
+		var t = gl.createTexture();
+		
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+		gl.bindTexture(gl.TEXTURE_2D, t);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		
+		obj.textures[texInd] = t;
+		obj.textureOK++;
+	}
+	image.src = filename;
+}

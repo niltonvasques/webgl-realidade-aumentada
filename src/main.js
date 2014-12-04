@@ -97,12 +97,19 @@ function loadResources( ){
 	var earthOBJLoad = new OBJLoad( );
 	earthOBJLoad.readOBJFile("obj/earth.obj", gl, 1, true);
 	
+	var normalMapOBJLoad = new OBJLoad( );
+	normalMapOBJLoad.readOBJFile("obj/cubeText_NM.obj", gl, 1, true);
+
 	var tick = function() {   // Start drawing
 		if ( sphereObj == null && sphereOBJLoad.g_objDoc != null && sphereOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
 			sphereObj = onSphereReadComplete( gl, sphereOBJLoad );
 		}
 		if ( earthObj == null && earthOBJLoad.g_objDoc != null && earthOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
 			earthObj = onEarthReadComplete( gl, earthOBJLoad );
+		}
+
+		if ( normalMapObj == null && earthOBJLoad.g_objDoc != null && earthOBJLoad.g_objDoc.isMTLComplete()) { // OBJ and all MTLs are available
+			normalMapObj = onNormalMapReadComplete( gl, earthOBJLoad );
 		}
 		
 		if ( earthObj != null && sphereObj != null && earthObj.model.length > 0 && sphereObj.model.length > 0) {
