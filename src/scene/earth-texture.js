@@ -12,17 +12,21 @@ EarthTexMarker.modelSize 	= 50.0;
 EarthTexMarker.ANGLE_STEP	= 30.0;
 EarthTexMarker.last		= Date.now( );
 
-function updateEarthTex( markerId, pose ) {
-	if( markerId != EarthTexMarker.id ){
-		return;
-	}
-
+function updateEarthTexAngle( ){
 	var now = Date.now();   // Calculate the elapsed time
 	var elapsed = now - EarthTexMarker.last;
 	EarthTexMarker.last = now;
 	// Update the current rotation angle (adjusted by the elapsed time)
 	var newAngle = EarthTexMarker.angle + (EarthTexMarker.ANGLE_STEP * elapsed) / 1000.0;
 	EarthTexMarker.angle = newAngle % 360;
+
+	EarthTexMarker.rotMat.setIdentity();
+}
+
+function updateEarthTex( markerId, pose ) {
+	if( markerId != EarthTexMarker.id ){
+		return;
+	}
 
 
 	var yaw 	= Math.atan2(pose.bestRotation[0][2], pose.bestRotation[2][2]) * 180.0/Math.PI;
@@ -31,7 +35,6 @@ function updateEarthTex( markerId, pose ) {
 
 	EarthTexMarker.found = true;
 
-	EarthTexMarker.rotMat.setIdentity();
 	EarthTexMarker.rotMat.rotate(yaw, 0.0, 1.0, 0.0);
 	EarthTexMarker.rotMat.rotate(pitch, 1.0, 0.0, 0.0);
 	EarthTexMarker.rotMat.rotate(roll, 0.0, 0.0, 1.0);
@@ -48,14 +51,9 @@ function updateEarthTex( markerId, pose ) {
 function drawEarthTexShader( ) {
 	if( !EarthTexMarker.found ) return;
 
-  gl.useProgram( shaderTexture );   // Tell that this program object is used
+	gl.useProgram( shaderTexture );   // Tell that this program object is used
 
-  //// Assign the buffer objects and enable the assignment
-  //initAttributeVariable(gl, program.a_Position, EarthTexMarker.vertexBuffer); // Vertex coordinates
-  //initAttributeVariable(gl, program.a_Normal, EarthTexMarker.normalBuffer);   // Normal
-  ///gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EarthTexMarker.indexBuffer);  // Bind indices
-
-  drawEarthTex( gl, shaderTexture );   // Draw
+	drawEarthTex( gl, shaderTexture );   // Draw
 }
 
 function drawEarthTex( gl, program ) {
@@ -66,11 +64,6 @@ function drawEarthTex( gl, program ) {
 	EarthTexMarker.modelMat.multiply(EarthTexMarker.transMat);
 	EarthTexMarker.modelMat.multiply(EarthTexMarker.rotMat);
 	EarthTexMarker.modelMat.multiply(EarthTexMarker.scaleMat);
-
-	MVPMat.setIdentity( );
-	MVPMat.multiply( scene.projMat );
-	MVPMat.multiply( scene.viewMat );
-	MVPMat.multiply( EarthTexMarker.modelMat );	
 
 	EarthTexMarker.mvpMat.setIdentity( );
 	EarthTexMarker.mvpMat.multiply( scene.projMat );
