@@ -245,7 +245,7 @@ function drawScene(markers) {
     if( EarthTexMarker.found )
         drawMoonPhongInner( gl, shaderPhong );
 
-    drawSunPhong( );
+   // drawSunPhong( );
 
     drawRoughCubeShader( );
 }
