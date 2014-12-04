@@ -412,7 +412,7 @@
                                 float lightIntesity	= 100.0;
                                 float attenuation        = lightIntesity / d; 
 
-                                if( i == 0 ) attenuation *= 3.0;
+                                if( i == 0 ) attenuation *= 3.0; // Maior peso para a luz do sol
                                 total_contribution += ambient + attenuation * ( diffuse + specular );
                             }
                         }
