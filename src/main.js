@@ -18,6 +18,8 @@ var shaderAxis		= null;
 var shaderPlanets   	= null;
 var shaderTerra   	= null;
 var shaderSolid 	= null;
+var shaderPhong 	= null;
+var shaderTexture 	= null;
 
 var axis 		= null;
 var baseTexture		= null;
@@ -72,6 +74,8 @@ function main() {
 	initSolidShader( );
 
 	initTextureShader( );
+
+	initPhongShader( );
 
 // Initialize buffers
 	initCubeVertexBuffers( gl );
@@ -210,7 +214,7 @@ function drawScene(markers) {
 	scene.projMat.setPerspective(40.0, gl.viewportWidth / gl.viewportHeight, 0.1, 1000.0);
 
 // Desenha uma estrela solitária na tela, sem a utilização dos marcadores
-	drawSiriusStar( true );
+	//drawSiriusStar( true );
 
 // Desenha o sol caso seu marcador tenha sido encontrado
 // IF SolMarker.found = true
@@ -225,6 +229,8 @@ function drawScene(markers) {
 
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 	drawEarthTexShader( );
+
+	drawSunPhong( );
 }
 
 // ********************************************************
@@ -237,7 +243,9 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
 	SolMarker.found 	= false;
 	TerraMarker.found 	= false;
 	CubeMarker.found 	= false;
-	EarthTexMarker.found 	= false;
+	//EarthTexMarker.found 	= false; // Mantém o posicionamento após o marcador sumir
+
+	updateEarthTexAngle( );
 
 	for(var m = 0; m < markers.length; m++ ){
 
@@ -256,6 +264,8 @@ function updateScenes(markers){ //As modificações foram feitas aqui!!
    		
 		//updateTerraMarker( markers[m].id, pose );
 		updateEarthTex( markers[m].id, pose );
+
+		updateSunPhong( markers[m].id, pose );
 	}
 };
 

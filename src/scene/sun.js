@@ -11,6 +11,7 @@ SolMarker.modelMat 	= new Matrix4( );
 SolMarker.mvpMat 	= new Matrix4( );
 SolMarker.lightColor	= new Vector4( );
 SolMarker.color		= new Vector3( );
+SolMarker.modelSize	= 90.0;
 
 function updateSolMarker( markerId, pose ){
 		
@@ -33,7 +34,7 @@ function updateSolMarker( markerId, pose ){
 	SolMarker.transMat.translate(pose.bestTranslation[0], pose.bestTranslation[1], -pose.bestTranslation[2]);
 
 	SolMarker.scaleMat.setIdentity();
-	SolMarker.scaleMat.scale( modelSize, modelSize, modelSize );
+	SolMarker.scaleMat.scale( SolMarker.modelSize, SolMarker.modelSize, SolMarker.modelSize );
 
 	/*console.log(yaw);
 	console.log(pitch);

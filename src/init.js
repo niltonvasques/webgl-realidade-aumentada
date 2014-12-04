@@ -630,3 +630,51 @@ function initTextureShader( ){
 		}
 
 }
+
+function initPhongShader( ){
+	var phongVShader = getScriptContent( "phong-vs" );
+	var phongFShader = getScriptContent( "phong-fs" );
+
+
+	// Initialize shaders
+	shaderPhong = createProgram(gl, phongVShader, phongFShader );   
+
+	if ( !shaderPhong ) {
+		console.log('Failed to intialize shaders.');
+		return;
+	}
+
+	shaderPhong.vPositionAttr 	= gl.getAttribLocation(shaderPhong, "aVPosition");		
+	shaderPhong.vNormalAttr 		= gl.getAttribLocation(shaderPhong, "aVNorm");
+	shaderPhong.uModelMat 		= gl.getUniformLocation(shaderPhong, "uModelMat");
+	shaderPhong.uViewMat 		= gl.getUniformLocation(shaderPhong, "uViewMat");
+	shaderPhong.uProjMat 		= gl.getUniformLocation(shaderPhong, "uProjMat");
+	shaderPhong.uNormMat 		= gl.getUniformLocation(shaderPhong, "uNormMat");
+	
+	if (shaderPhong.vPositionAttr < 0 	|| 
+		shaderPhong.vColorAttr < 0 		|| 
+		!shaderPhong.uModelMat 			|| 
+		!shaderPhong.uViewMat 			|| 
+		!shaderPhong.uProjMat 			|| 
+		!shaderPhong.uNormMat ) {
+		console.log("Error getAttribLocation shaderPhong"); 
+		return;
+	}
+		
+	shaderPhong.uCamPos 			= gl.getUniformLocation(shaderPhong, "uCamPos");
+	shaderPhong.uLightPos 		= gl.getUniformLocation(shaderPhong, "uLPos");
+	shaderPhong.uLightColor 		= gl.getUniformLocation(shaderPhong, "uLColor");
+	shaderPhong.uMatAmb 			= gl.getUniformLocation(shaderPhong, "uMatAmb");
+	shaderPhong.uMatDif 			= gl.getUniformLocation(shaderPhong, "uMatDif");
+	shaderPhong.uMatSpec			= gl.getUniformLocation(shaderPhong, "uMatSpec");
+	shaderPhong.uExpSpec			= gl.getUniformLocation(shaderPhong, "uExpSpec");
+	
+	if (shaderPhong.uCamPos < 0	 		|| shaderPhong.uLightPos < 0 	|| 
+		shaderPhong.uLightColor < 0		|| shaderPhong.uMatAmb < 0 		|| 
+		shaderPhong.uMatDif < 0			|| shaderPhong.uMatSpec < 0 		|| 
+		shaderPhong.uExpSpec < 0 ) {
+		console.log("Error getAttribLocation"); 
+		return;
+	}
+
+}
