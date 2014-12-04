@@ -1,14 +1,14 @@
 var CubeMarker 		= new Object( );
-CubeMarker.id		= 1;
-CubeMarker.rotMat 		= new Matrix4( );
-CubeMarker.transMat 		= new Matrix4( );
-CubeMarker.scaleMat 		= new Matrix4( );
-CubeMarker.modelMat 		= new Matrix4( );
-CubeMarker.normalMat 		= new Matrix4( );
-CubeMarker.mvpMat 		= new Matrix4( );
-CubeMarker.lightColor		= new Vector4( );
-CubeMarker.angle 		= 0.0;
-CubeMarker.modelSize 		= 50.0;
+CubeMarker.id		= 2;
+CubeMarker.rotMat 	= new Matrix4( );
+CubeMarker.transMat 	= new Matrix4( );
+CubeMarker.scaleMat 	= new Matrix4( );
+CubeMarker.modelMat 	= new Matrix4( );
+CubeMarker.normalMat 	= new Matrix4( );
+CubeMarker.mvpMat 	= new Matrix4( );
+CubeMarker.lightColor	= new Vector4( );
+CubeMarker.angle 	= 0.0;
+CubeMarker.modelSize 	= 50.0;
 
 var ANGLE_STEP = 30;   // The increments of rotation angle (degrees)
 var last = Date.now(); // Last time that this function was called

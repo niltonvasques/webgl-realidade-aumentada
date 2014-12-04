@@ -241,7 +241,7 @@
 				// Calculado a distância entre a luz e o vértice
 				float d		= distance( vPosW, uLPos[i] );
 				//A luz difusa é então multiplicada pelo inverso da distância
-				float lightIntesity	= 100.0;
+				float lightIntesity	= 300.0;
 				vec4 nMatDif	= texel * lightIntesity / d;
 				vec4 nMatSpec	= uMatSpec * lightIntesity / d;
 
@@ -313,7 +313,7 @@
 				// Calculado a distância entre a luz e o vértice
 				float d		= distance( vPosW, uLPos[i] );
 				//A luz difusa é então multiplicada pelo inverso da distância
-				float lightIntesity	= 100.0;
+				float lightIntesity	= 300.0;
 				vec4 nMatDif	= uMatDif * lightIntesity / d;
 				vec4 nMatSpec	= uMatSpec * lightIntesity / d;
 
@@ -330,6 +330,93 @@
 			
 			gl_FragColor = clamp(ambient + total_diffuse + total_specular, 0.0, 1.0);
 			//gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+		}
+	</script>
+
+
+	<script id="normalMapping-vs" type="x-shader/x-vertex">
+
+		attribute vec3 aVPosition;
+		attribute vec3 aVNorm;
+		attribute vec2 aVTexCoord;
+		
+		uniform mat4 uModelMat;
+		uniform mat4 uMVPMat;
+		uniform mat4 uNormMat;
+		
+		varying vec3 vPosW;	
+		varying vec3 vNormalW;
+		varying vec2 vTextCoord;	
+			
+		void main(void) {
+			
+			gl_Position = uMVPMat * vec4(aVPosition.xyz, 1.0);
+			
+			vPosW = (uModelMat * vec4(aVPosition, 1.0)).xyz;
+			vTextCoord = aVTexCoord;
+			
+			vNormalW 	= normalize(vec3(uNormMat * vec4(aVNorm, 1.0)));
+		}
+
+	</script>
+
+	<script id="normalMapping-fs" type="x-shader/x-fragment">
+                #define LIGHT_MAX 16
+
+		precision mediump float;
+			
+		varying vec3 vPosW;	
+		varying vec3 vNormalW;
+		varying vec2 vTextCoord;	
+				
+		uniform sampler2D uTexture;
+		uniform sampler2D uNormalMap;
+		
+		uniform vec3 uCamPos;
+		uniform vec3 uLPos[LIGHT_MAX];
+		uniform vec4 uLColor[LIGHT_MAX];
+		uniform int uLSize;
+		uniform vec4 uMatAmb;
+		uniform vec4 uMatDif;
+		uniform vec4 uMatSpec;
+		uniform float uExpSpec;
+		
+		void main(void) {
+			vec4 nMap 		= texture2D(uNormalMap, vTextCoord);
+			vec3 vNM 		= normalize(nMap.xyz);
+
+                        vec4 total_ambient = vec4( 0.0 );
+                        vec4 total_diffuse = vec4( 0.0 );
+                        vec4 total_specular = vec4( 0.0 );
+                        
+                        for( int i = 0; i < LIGHT_MAX; i++ ){
+                            if( i < uLSize ) { 
+                        
+                                vec4 texel 		= texture2D(uTexture, vTextCoord);
+                                vec3 vL 		= normalize(uLPos[i] - vPosW);
+                                float teta 		= max(dot(vL, vNM), 0.0);			
+
+                                //fator de atenuação
+				// Calculado a distância entre a luz e o vértice
+				float d		= distance( vPosW, uLPos[i] );
+				//A luz difusa é então multiplicada pelo inverso da distância
+				float lightIntesity	= 30.0;
+                                float attenuation        = lightIntesity / d; 
+
+                                total_ambient 	+= uLColor[i] * uMatAmb;
+				texel           = texel * attenuation;
+				vec4 nMatSpec	= uMatSpec * attenuation;
+
+                                total_diffuse 	+= uLColor[i] * texel * teta;	
+
+                                vec3 vV 		= normalize(uCamPos - vPosW);
+                                vec3 vR 		= normalize(reflect(-vL, vNM));
+                                float omega 	= max(dot(vV, vR), 0.0);
+                                total_specular 	+= uLColor[i] * nMatSpec * pow(omega,uExpSpec);	
+                            }
+                        }
+			
+			gl_FragColor 	= clamp(total_ambient + total_diffuse + total_specular, 0.0, 1.0);
 		}
 	</script>
 	<!-- LIBRARYS -->
@@ -352,6 +439,7 @@
 	<script type="text/javascript" src="scene/earth-texture.js"></script>
 	<script type="text/javascript" src="scene/sun-phong.js"></script>
 	<script type="text/javascript" src="scene/moon.js"></script>
+	<script type="text/javascript" src="scene/rough-cube.js"></script>
 	<script type="text/javascript" src="init.js"></script>
 	<script type="text/javascript" src="camera.js"></script>
 	<script type="text/javascript" src="main.js"></script>
@@ -359,6 +447,16 @@
 	<script type="text/javascript" src="shader.js"></script>
 	<script type="text/javascript" src="utils.js"></script>
 	<script type="text/javascript" src="aruco.js"></script>
+
+	<style>
+		.flip {
+			-moz-transform: scale(-1, 1);
+			-webkit-transform: scale(-1, 1);
+			-o-transform: scale(-1, 1);
+			transform: scale(-1, 1);
+			filter: FlipH;
+		}
+	</style>
 
 
 </head>
@@ -370,10 +468,15 @@
     <div id="output"> </div>
     <br/>
 	<div style="text-align: center;">
-		<canvas id="videoGL" width="320" height="240" style="visibility: visible;"></canvas>
+		<canvas class="flip" id="videoGL" width="320" height="240" style="visibility: visible;"></canvas>
 	</div>
 	<video id="monitor" autoplay width="320" height="240" style="visibility: hidden;"></video>
 	<canvas id="videoImage" width="256" height="256" style="visibility: hidden;"></canvas>
+	<!-- <div style="text-align: center;">
+		<canvas id="videoGL" width="640" height="480" style="visibility: visible;"></canvas>
+	</div> -->
+	<!-- <video id="monitor" autoplay width="640" height="480" style="visibility: hidden;"></video> -->
+	<!-- <canvas id="videoImage" width="512" height="512" style="visibility: hidden;"></canvas> -->
 </body>
 
 </html>

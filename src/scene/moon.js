@@ -16,6 +16,7 @@ function updateMoonAngle( ){
 	var now = Date.now();   // Calculate the elapsed time
 	var elapsed = now - MoonPhong.last;
 	MoonPhong.last = now;
+
 	// Update the current rotation angle (adjusted by the elapsed time)
 	var newAngle = MoonPhong.angle + (MoonPhong.ANGLE_STEP * elapsed) / 1000.0;
 	MoonPhong.angle = newAngle % 360;
@@ -23,34 +24,17 @@ function updateMoonAngle( ){
 	MoonPhong.rotMat.setIdentity();
 }
 
-function drawMoonPhong( ) {
-
-	gl.useProgram( shaderPhong );   // Tell that this program object is used
-
-	drawMoonPhongInner( gl, shaderPhong );   // Draw
-}
-
 function drawMoonPhongInner( gl, program ) {
+
+	gl.useProgram( program );   // Tell that this program object is used
 
 	updateMoonAngle( );
 
-	MoonPhong.rotMat.rotate(MoonPhong.angle, 0.0, 1.0, 0.0);
+	MoonPhong.modelMat.set( EarthTexMarker.modelMat );
+	MoonPhong.modelMat.rotate( MoonPhong.angle, 0.0, 1.0, 0.0 );
+	MoonPhong.modelMat.translate( 1, 0, 0 );
+	MoonPhong.modelMat.scale(  2 / MoonPhong.modelSize,  2 / MoonPhong.modelSize, 2 / MoonPhong.modelSize );
 
-	MoonPhong.transMat.setIdentity( );
-	MoonPhong.transMat.translate( 0.5, 0, 0);
-
-	MoonPhong.transMat.set( EarthTexMarker.transMat );
-
-	MoonPhong.scaleMat.setIdentity();
-	MoonPhong.scaleMat.scale( MoonPhong.modelSize, MoonPhong.modelSize, MoonPhong.modelSize );
-
-	MoonPhong.modelMat.setIdentity();
-	MoonPhong.modelMat.multiply(MoonPhong.transMat);
-	MoonPhong.modelMat.multiply(MoonPhong.scaleMat);
-	MoonPhong.modelMat.multiply(MoonPhong.rotMat);
-	MoonPhong.modelMat.translate( 5, 0, 0 );
-
-	//MoonPhong.modelMat.set( EarthTexMarker.modelMat );
 	//MoonPhong.modelMat.multiply(MoonPhong.rotMat);
 	//MoonPhong.modelMat.multiply(MoonPhong.transMat);
 	//MoonPhong.modelMat.multiply(MoonPhong.scaleMat);
