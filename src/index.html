@@ -385,13 +385,11 @@
 			vec4 nMap 		= texture2D(uNormalMap, vTextCoord);
 			vec3 vNM 		= normalize(nMap.xyz);
 
-                        vec4 total_ambient = vec4( 0.0 );
-                        vec4 total_diffuse = vec4( 0.0 );
-                        vec4 total_specular = vec4( 0.0 );
-                        
+
+                        vec4 total_contribution = vec4( 0.0 ); 
+
                         for( int i = 0; i < LIGHT_MAX; i++ ){
                             if( i < uLSize ) { 
-                        
                                 vec4 texel 		= texture2D(uTexture, vTextCoord);
                                 vec3 vL 		= normalize(uLPos[i] - vPosW);
                                 float teta 		= max(dot(vL, vNM), 0.0);			
@@ -400,25 +398,26 @@
 				// Calculado a distância entre a luz e o vértice
 				float d		= distance( vPosW, uLPos[i] );
 				//A luz difusa é então multiplicada pelo inverso da distância
-				float lightIntesity	= 30.0;
-                                float attenuation        = lightIntesity / d; 
 
-                                total_ambient 	+= uLColor[i] * uMatAmb;
-				texel           = texel * attenuation;
-				vec4 nMatSpec	= uMatSpec * attenuation;
+                                vec4 ambient 	= uLColor[i] * uMatAmb;
 
-                                total_diffuse 	+= uLColor[i] * texel * teta;	
+                                vec4 diffuse 	= uLColor[i] * texel * teta;	
 
-                                vec3 vV 		= normalize(uCamPos - vPosW);
-                                vec3 vR 		= normalize(reflect(-vL, vNM));
+                                vec3 vV 	= normalize(uCamPos - vPosW);
+                                vec3 vR 	= normalize(reflect(-vL, vNM));
                                 float omega 	= max(dot(vV, vR), 0.0);
-                                total_specular 	+= uLColor[i] * nMatSpec * pow(omega,uExpSpec);	
+                                vec4 specular 	= uLColor[i] * uMatSpec * pow(omega,uExpSpec);	
+
+                                float lightIntesity	= 100.0;
+                                float attenuation        = lightIntesity / d; 
+                                total_contribution += attenuation * ( ambient + diffuse + specular );
                             }
                         }
 			
-			gl_FragColor 	= clamp(total_ambient + total_diffuse + total_specular, 0.0, 1.0);
+			gl_FragColor 	= clamp( total_contribution, 0.0, 1.0);
 		}
 	</script>
+
 	<!-- LIBRARYS -->
 	<script type="text/javascript" src="lib/webgl-utils.js"></script>
 	<script type="text/javascript" src="lib/cuon-matrix.js"></script>
