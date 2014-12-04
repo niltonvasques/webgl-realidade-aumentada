@@ -385,13 +385,11 @@
 			vec4 nMap 		= texture2D(uNormalMap, vTextCoord);
 			vec3 vNM 		= normalize(nMap.xyz);
 
-                        vec4 total_ambient = vec4( 0.0 );
-                        vec4 total_diffuse = vec4( 0.0 );
-                        vec4 total_specular = vec4( 0.0 );
-                        
+
+                        vec4 total_contribution = vec4( 0.0 ); 
+
                         for( int i = 0; i < LIGHT_MAX; i++ ){
                             if( i < uLSize ) { 
-                        
                                 vec4 texel 		= texture2D(uTexture, vTextCoord);
                                 vec3 vL 		= normalize(uLPos[i] - vPosW);
                                 float teta 		= max(dot(vL, vNM), 0.0);			
@@ -400,25 +398,26 @@
 				// Calculado a distância entre a luz e o vértice
 				float d		= distance( vPosW, uLPos[i] );
 				//A luz difusa é então multiplicada pelo inverso da distância
-				float lightIntesity	= 30.0;
-                                float attenuation        = lightIntesity / d; 
 
-                                total_ambient 	+= uLColor[i] * uMatAmb;
-				texel           = texel * attenuation;
-				vec4 nMatSpec	= uMatSpec * attenuation;
+                                vec4 ambient 	= uLColor[i] * uMatAmb;
 
-                                total_diffuse 	+= uLColor[i] * texel * teta;	
+                                vec4 diffuse 	= uLColor[i] * texel * teta;	
 
-                                vec3 vV 		= normalize(uCamPos - vPosW);
-                                vec3 vR 		= normalize(reflect(-vL, vNM));
+                                vec3 vV 	= normalize(uCamPos - vPosW);
+                                vec3 vR 	= normalize(reflect(-vL, vNM));
                                 float omega 	= max(dot(vV, vR), 0.0);
-                                total_specular 	+= uLColor[i] * nMatSpec * pow(omega,uExpSpec);	
+                                vec4 specular 	= uLColor[i] * uMatSpec * pow(omega,uExpSpec);	
+
+                                float lightIntesity	= 100.0;
+                                float attenuation        = lightIntesity / d; 
+                                total_contribution += ambient + attenuation * ( diffuse + specular );
                             }
                         }
 			
-			gl_FragColor 	= clamp(total_ambient + total_diffuse + total_specular, 0.0, 1.0);
+			gl_FragColor 	= clamp( total_contribution, 0.0, 1.0);
 		}
 	</script>
+
 	<!-- LIBRARYS -->
 	<script type="text/javascript" src="lib/webgl-utils.js"></script>
 	<script type="text/javascript" src="lib/cuon-matrix.js"></script>
@@ -439,6 +438,7 @@
 	<script type="text/javascript" src="scene/earth-texture.js"></script>
 	<script type="text/javascript" src="scene/sun-phong.js"></script>
 	<script type="text/javascript" src="scene/moon.js"></script>
+	<script type="text/javascript" src="scene/moon-tex.js"></script>
 	<script type="text/javascript" src="scene/rough-cube.js"></script>
 	<script type="text/javascript" src="init.js"></script>
 	<script type="text/javascript" src="camera.js"></script>
@@ -467,16 +467,17 @@
     <br/>
     <div id="output"> </div>
     <br/>
-	<div style="text-align: center;">
+	<!-- <div style="text-align: center;">
 		<canvas class="flip" id="videoGL" width="320" height="240" style="visibility: visible;"></canvas>
-	</div>
+	</div> 
 	<video id="monitor" autoplay width="320" height="240" style="visibility: hidden;"></video>
 	<canvas id="videoImage" width="256" height="256" style="visibility: hidden;"></canvas>
-	<!-- <div style="text-align: center;">
-		<canvas id="videoGL" width="640" height="480" style="visibility: visible;"></canvas>
-	</div> -->
-	<!-- <video id="monitor" autoplay width="640" height="480" style="visibility: hidden;"></video> -->
-	<!-- <canvas id="videoImage" width="512" height="512" style="visibility: hidden;"></canvas> -->
+        -->
+	 <div style="text-align: center;">
+		<canvas class="flip" id="videoGL" width="640" height="480" style="visibility: visible;"></canvas>
+	</div> 
+	<video id="monitor" autoplay width="640" height="480" style="visibility: hidden;"></video>
+	<canvas id="videoImage" width="512" height="512" style="visibility: hidden;"></canvas>
 </body>
 
 </html>
