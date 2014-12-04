@@ -228,7 +228,7 @@
 		void main(void) {
 			vec4 texel = texture2D(uSampler0, vTextCoord);
 			
-			vec4 ambient = vec4(uLColor[0].rgb * uMatAmb.rgb, uMatAmb.a);
+			vec4 ambient = vec4(texel.rgb * uMatAmb.rgb, uMatAmb.a);
 
 			vec4 total_diffuse  = vec4(0.0, 0.0, 0.0, 0.0 ); 
 			vec4 total_specular = vec4(0.0, 0.0, 0.0, 0.0 ); 
@@ -245,7 +245,7 @@
 				vec4 nMatDif	= texel * lightIntesity / d;
 				vec4 nMatSpec	= uMatSpec * lightIntesity / d;
 
-				vec4 diffuse = vec4( uLColor[i].rgb * nMatDif.rgb * teta, texel.a);	
+				vec4 diffuse = vec4( uLColor[i].rgb * texel.rgb * teta, texel.a);	
 				
 				total_diffuse += diffuse;
 
@@ -257,6 +257,7 @@
 			}
 			
 			gl_FragColor = clamp(ambient + total_diffuse + total_specular, 0.0, 1.0);
+			//gl_FragColor = texel;
 		}
 	</script>
 
@@ -410,6 +411,8 @@
 
                                 float lightIntesity	= 100.0;
                                 float attenuation        = lightIntesity / d; 
+
+                                if( i == 0 ) attenuation *= 3.0;
                                 total_contribution += ambient + attenuation * ( diffuse + specular );
                             }
                         }
@@ -437,6 +440,7 @@
 	<script type="text/javascript" src="scene/earth.js"></script>
 	<script type="text/javascript" src="scene/earth-texture.js"></script>
 	<script type="text/javascript" src="scene/sun-phong.js"></script>
+	<script type="text/javascript" src="scene/sun-texture.js"></script>
 	<script type="text/javascript" src="scene/moon.js"></script>
 	<script type="text/javascript" src="scene/moon-tex.js"></script>
 	<script type="text/javascript" src="scene/rough-cube.js"></script>

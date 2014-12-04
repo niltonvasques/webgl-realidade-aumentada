@@ -84,7 +84,7 @@ function main() {
     // Initialize buffers
     initCubeVertexBuffers( gl );
 
-    scene.addLight( new Light( [ 0.0,  0.0,  -200 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // SUN
+    scene.addLight( new Light( [ 0.0,  0.0,  -300 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // SUN
     scene.addLight( new Light( [ 0.0, 0.0, -100 ], [ 1.0,  1.0,  1.0, 1.0 ] ) ); // MOON 
 
 
@@ -257,6 +257,7 @@ function drawScene(markers) {
         //drawMoonPhongInner( gl, shaderPhong );
 
    // drawSunPhong( );
+    drawSunTex( gl, shaderTexture );
 
     drawRoughCubeShader( );
 }

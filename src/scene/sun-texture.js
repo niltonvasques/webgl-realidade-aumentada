@@ -1,66 +1,65 @@
-var MoonTex 		= new Object( );
-MoonTex.rotMarkerMat	= new Matrix4( );
-MoonTex.rotMat 		= new Matrix4( );
-MoonTex.transMat 	= new Matrix4( );
-MoonTex.scaleMat 	= new Matrix4( );
-MoonTex.modelMat 	= new Matrix4( );
-MoonTex.normalMat 	= new Matrix4( );
-MoonTex.mvpMat 		= new Matrix4( );
-MoonTex.lightColor	= new Vector4( );
-MoonTex.position        = new Vector4( );
-MoonTex.angle 		= 0.0;
-MoonTex.modelSize 	= 50.0;
-MoonTex.ANGLE_STEP	= 90.0;
-MoonTex.last		= Date.now( );
+var SunTex 		= new Object( );
+SunTex.id		= 24;
+SunTex.rotMarkerMat	= new Matrix4( );
+SunTex.rotMat 		= new Matrix4( );
+SunTex.transMat 	= new Matrix4( );
+SunTex.scaleMat 	= new Matrix4( );
+SunTex.modelMat 	= new Matrix4( );
+SunTex.normalMat 	= new Matrix4( );
+SunTex.mvpMat 		= new Matrix4( );
+SunTex.lightColor	= new Vector4( );
+SunTex.angle 		= 0.0;
+SunTex.modelSize 	= 50.0;
+SunTex.ANGLE_STEP	= 30.0;
+SunTex.last		= Date.now( );
 
-function updateMoonTexAngle( ){
+function updateSunTexAngle( ){
 	var now = Date.now();   // Calculate the elapsed time
-	var elapsed = now - MoonTex.last;
-	MoonTex.last = now;
+	var elapsed = now - SunTex.last;
+	SunTex.last = now;
 	// Update the current rotation angle (adjusted by the elapsed time)
-	var newAngle = MoonTex.angle + (MoonTex.ANGLE_STEP * elapsed) / 1000.0;
-	MoonTex.angle = newAngle % 360;
+	var newAngle = SunTex.angle + (SunTex.ANGLE_STEP * elapsed) / 1000.0;
+	SunTex.angle = newAngle % 360;
 
-	MoonTex.rotMat.setIdentity();
 }
 
-function drawMoonTex( gl, program ) {
-	gl.useProgram( shaderNormalMap );   // Tell that this program object is used
+function drawSunTex( gl, program ) {
+        gl.useProgram( program );
 
-	updateMoonTexAngle( );
+	updateSunTexAngle( );
 
-	//MoonTex.rotMat.set( MoonTex.rotMarkerMat );
-	//MoonTex.rotMat.rotate(MoonTex.angle, 0.0, 1.0, 0.0);
-	MoonTex.modelMat.set( EarthTexMarker.modelMat );
-	MoonTex.modelMat.rotate( -MoonTex.angle, 0.0, 1.0, 0.0 );
-	MoonTex.modelMat.translate( 1, 0, 0 );
-	MoonTex.modelMat.scale(  10 / MoonTex.modelSize,  10 / MoonTex.modelSize, 10 / MoonTex.modelSize );
+	SunTex.rotMat.setIdentity( );
 
-	MoonTex.mvpMat.setIdentity( );
-	MoonTex.mvpMat.multiply( scene.projMat );
-	MoonTex.mvpMat.multiply( scene.viewMat );
-	MoonTex.mvpMat.multiply( MoonTex.modelMat );
+	SunTex.transMat.setIdentity( );
+	SunTex.transMat.translate( 0, 0, -300 );
+
+	SunTex.scaleMat.setIdentity();
+	SunTex.scaleMat.scale( SunTex.modelSize, SunTex.modelSize, SunTex.modelSize );
+
+	SunTex.modelMat.setIdentity();
+	SunTex.modelMat.multiply(SunTex.transMat);
+	SunTex.modelMat.multiply(SunTex.rotMat);
+	SunTex.modelMat.multiply(SunTex.scaleMat);
+
+	SunTex.mvpMat.setIdentity( );
+	SunTex.mvpMat.multiply( scene.projMat );
+	SunTex.mvpMat.multiply( scene.viewMat );
+	SunTex.mvpMat.multiply( SunTex.modelMat );
 
 	// Calculate transformation matrix for normals and pass it to u_NormalMatrix
-	MoonTex.normalMat.setInverseOf( MoonTex.modelMat );
-	MoonTex.normalMat.transpose( );
+	SunTex.normalMat.setInverseOf( SunTex.modelMat );
+	SunTex.normalMat.transpose( );
 
-        MoonTex.position = new Vector4( );
-        MoonTex.position.elements[0] = 1.0;
-        MoonTex.position.elements[1] = 1.0;
-        MoonTex.position.elements[2] = 1.0;
-        MoonTex.position.elements[3] = 1.0;
-        MoonTex.position = MoonTex.modelMat.multiplyVector4( MoonTex.position ).elements; 
 
-	drawMoonTexDetailed( gl, earthObj.model[0], program, gl.TRIANGLES );	
+	drawSunTexDetailed( gl, earthObj.model[1], program, gl.TRIANGLES );	
 }
 
 
 // ********************************************************
 // ********************************************************
-function drawMoonTexDetailed(gl, o, shaderProgram, primitive) {
+function drawSunTexDetailed(gl, o, shaderProgram, primitive) {
 
-    var texNormMap = 2;
+    var texNormMap = 3;
 
     var matAmb		= new Vector4();
     var matDif		= new Vector4();
@@ -70,11 +69,6 @@ function drawMoonTexDetailed(gl, o, shaderProgram, primitive) {
     if (earthObj.textures[texNormMap*2] != null) {   	
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, earthObj.textures[texNormMap*2]);
-    }
-
-    if (earthObj.textures[texNormMap*2+1] != null) {   	
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, earthObj.textures[texNormMap*2+1]);
     }
 
     if (o.Material != -1) {
@@ -114,23 +108,19 @@ function drawMoonTexDetailed(gl, o, shaderProgram, primitive) {
         Ns 					= 100.0;
     }
 
-    gl.uniformMatrix4fv(shaderProgram.uModelMat, false, MoonTex.modelMat.elements);
-    //gl.uniformMatrix4fv(shaderProgram.uViewMat, false, scene.viewMat.elements);
-    //gl.uniformMatrix4fv(shaderProgram.uProjMat, false, scene.projMat.elements);
-    gl.uniformMatrix4fv(shaderProgram.uMVPMat, false, MoonTex.mvpMat.elements);
-    gl.uniformMatrix4fv(shaderProgram.uNormMat, false, MoonTex.normalMat.elements);
+    gl.uniformMatrix4fv(shaderProgram.uModelMat, false, SunTex.modelMat.elements);
+    gl.uniformMatrix4fv(shaderProgram.uViewMat, false, scene.viewMat.elements);
+    gl.uniformMatrix4fv(shaderProgram.uProjMat, false, scene.projMat.elements);
+    gl.uniformMatrix4fv(shaderProgram.uNormMat, false, SunTex.normalMat.elements);
     gl.uniform4fv(shaderProgram.uLightColor, scene.rawLightsColor );
     gl.uniform3fv(shaderProgram.uLightPos, scene.rawLightsPos );
-    gl.uniform1i(shaderProgram.uLightSize, scene.lights.length );
     gl.uniform3fv(shaderProgram.uCamPos, scene.cameraPos.elements);
 
     gl.uniform4fv(shaderProgram.uMatAmb, matAmb.elements);
     gl.uniform4fv(shaderProgram.uMatDif, matDif.elements);
     gl.uniform4fv(shaderProgram.uMatSpec, matSpec.elements);
     gl.uniform1f(shaderProgram.uExpSpec, Ns);
-    //gl.uniform1i(shaderProgram.uSampler, 0);
-    gl.uniform1i(shaderProgram.uTexture, 0);
-    gl.uniform1i(shaderProgram.uNormalMap, 1);
+    gl.uniform1i(shaderProgram.uSampler, 0);
 
     if (o.vertexBuffer != null) {
         gl.bindBuffer(gl.ARRAY_BUFFER, o.vertexBuffer);
