@@ -7,11 +7,16 @@ MoonTex.modelMat 	= new Matrix4( );
 MoonTex.normalMat 	= new Matrix4( );
 MoonTex.mvpMat 		= new Matrix4( );
 MoonTex.lightColor	= new Vector4( );
-MoonTex.position        = new Vector4( );
+MoonTex.position        = new Array( 4 );
 MoonTex.angle 		= 0.0;
 MoonTex.modelSize 	= 50.0;
 MoonTex.ANGLE_STEP	= 90.0;
 MoonTex.last		= Date.now( );
+
+MoonTex.position[0] = 1.0;
+MoonTex.position[1] = 1.0;
+MoonTex.position[2] = 1.0;
+MoonTex.position[3] = 1.0;
 
 function updateMoonTexAngle( ){
 	var now = Date.now();   // Calculate the elapsed time
@@ -45,7 +50,7 @@ function drawMoonTex( gl, program ) {
 	MoonTex.normalMat.setInverseOf( MoonTex.modelMat );
 	MoonTex.normalMat.transpose( );
 
-        MoonTex.position = new Vector4( );
+        MoonTex.position        = new Vector4( );
         MoonTex.position.elements[0] = 1.0;
         MoonTex.position.elements[1] = 1.0;
         MoonTex.position.elements[2] = 1.0;
